@@ -6,11 +6,12 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import MapFactory from '@/map/MapFactory';
 import _ from 'lodash';
-import data from './data.json';
+import empData from './empData.json';
+import facilityData from './facility.json';
 import EE from '@/map/EventBus';
 import {MapBase} from '@/map/MapBase';
 import {PathType} from '@/map/PathBuilder';
-
+import Env from '@/map/utils/Env';
 @Component
 export default class HelloWorld extends Vue {
     public map: MapBase;
@@ -24,30 +25,60 @@ export default class HelloWorld extends Vue {
     public maptype: boolean;
     @Prop({type: Boolean, default: false})
     public geolocation: boolean;
-    @Prop({type: String, default: 'amap'})
+    @Prop({type: String, default: 'bmap'})
     public mapType: string;
     created() {
         EE.once('mapLoaded', () => {
             this.loadControls();
-            let empHasPoint = _.filter(data.data, e => {
+            let empHasPoint = _.filter(empData.data, e => {
                 return e.lng !== null && e.lat !== null;
             });
             empHasPoint.forEach(eachPerson => {
                 this.map.addMarker({
                     lng: eachPerson.lng,
                     lat: eachPerson.lat,
-                    iconUrl: `http://file2.5ihw.cn:9033/comm/image/sys/${
-                        eachPerson.icon
-                    }`,
+                    iconUrl: Env.IMG_URL + eachPerson.icon,
                     content: eachPerson.name,
+                });
+            });
+            facilityData.data.forEach(eachFacility => {
+                this.map.addMarker({
+                    lng: eachFacility.lng,
+                    lat: eachFacility.lat,
+                    iconUrl: Env.IMG_URL + eachFacility.icon,
+                });
+            });
+            facilityData.data.forEach(eachFacility => {
+                this.map.addMarker({
+                    lng: eachFacility.lng,
+                    lat: eachFacility.lat,
+                    iconUrl: Env.IMG_URL + eachFacility.icon,
+                });
+            });
+            facilityData.data.forEach(eachFacility => {
+                this.map.addMarker({
+                    lng: eachFacility.lng,
+                    lat: eachFacility.lat,
+                    iconUrl: Env.IMG_URL + eachFacility.icon,
+                });
+            });
+            facilityData.data.forEach(eachFacility => {
+                this.map.addMarker({
+                    lng: eachFacility.lng,
+                    lat: eachFacility.lat,
+                    iconUrl: Env.IMG_URL + eachFacility.icon,
+                });
+            });
+            facilityData.data.forEach(eachFacility => {
+                this.map.addMarker({
+                    lng: eachFacility.lng,
+                    lat: eachFacility.lat,
+                    iconUrl: Env.IMG_URL + eachFacility.icon,
                 });
             });
             let empPoints = empHasPoint.map(e => {
                 return {lng: e.lng, lat: e.lat};
             });
-            // this.map.addPath({ points: empPoints, pathType: PathType.CIRCLE })
-            // this.map.addPath({ points: empPoints, pathType: PathType.LINE })
-            // this.map.addPath({ points: empPoints, pathType: PathType.RECTANGLE })
             setTimeout(() => {
                 this.map.addText({
                     lng: empPoints[0].lng,

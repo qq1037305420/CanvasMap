@@ -1,8 +1,9 @@
-import {MarkerOption} from './Options';
 import {MarkerBuilder} from './MarkerBuilder';
 import {PathBuilder} from './PathBuilder';
 import {TextBuilder} from './TextBuilder';
 import paper from 'paper';
+import LabeledMarker from './utils/LabeledMarker';
+let worker = require('worker!./webWorker.ts');
 
 interface elements {
     path: any[];
@@ -48,25 +49,52 @@ export abstract class MapBase {
             this.elements.text = [];
         }
         this.elements.text.push(option);
+        // new TextBuilder(
+        //     this.gps2pix(option.lng, option.lat),
+        //     option.content
+        // ).build();
+        // this.redraw();
     }
 
+    public drawMarker() {
+        let markerChunks = _.chunk(this.elements.marker, 50);
+        markerChunks.forEach(eachChunk => {
+            console.log(worker);
+            // worker.onmessage = function(event) {
+            //     console.log(event);
+            // };
+            this.buildMarker(eachChunk);
+            paper.view.draw();
+        });
+    }
+
+    public buildMarker(markerChunk: any) {
+        markerChunk.forEach(e => {
+            if (e.content) {
+                new LabeledMarker(
+                    this.gps2pix(e.lng, e.lat),
+                    e.iconUrl,
+                    0,
+                    e.content
+                ).build();
+            } else {
+                const marker = new MarkerBuilder();
+                marker.setIconUrl(e.iconUrl);
+                marker.setPosition(this.gps2pix(e.lng, e.lat));
+                marker.build();
+            }
+        });
+    }
     public draw() {
-        this.elements.marker.forEach(e => {
-            let marker = new MarkerBuilder(
-                this.gps2pix(e.lng, e.lat),
-                e.iconUrl,
-                0,
-                e.content
-            ).build();
-        });
-        this.elements.path.forEach(e => {
-            let pathPixels = e.points.map(x => {
-                return this.gps2pix(x.lng, x.lat);
-            });
-            new PathBuilder(pathPixels, e.pathType).build();
-        });
-        this.elements.text.forEach(e => {
-            new TextBuilder(this.gps2pix(e.lng, e.lat), e.content).build();
-        });
+        this.drawMarker();
+        // this.elements.path.forEach(e => {
+        //     let pathPixels = e.points.map(x => {
+        //         return this.gps2pix(x.lng, x.lat);
+        //     });
+        //     new PathBuilder(pathPixels, e.pathType).build();
+        // });
+        // this.elements.text.forEach(e => {
+        //     new TextBuilder(this.gps2pix(e.lng, e.lat), e.content).build();
+        // });
     }
 }
