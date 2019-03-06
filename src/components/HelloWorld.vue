@@ -12,81 +12,34 @@ import EE from '@/map/EventBus';
 import {MapBase} from '@/map/MapBase';
 import {PathType} from '@/map/PathBuilder';
 import Env from '@/map/utils/Env';
+import * as Builders from '@/map/utils/Builders';
+
 @Component
 export default class HelloWorld extends Vue {
-    public map: MapBase;
+    public map!: MapBase;
     @Prop({type: Boolean, default: false})
-    public scale: boolean;
+    public scale!: boolean;
     @Prop({type: Boolean, default: false})
-    public toolbar: boolean;
+    public toolbar!: boolean;
     @Prop({type: Boolean, default: false})
-    public overview: boolean;
+    public overview!: boolean;
     @Prop({type: Boolean, default: false})
-    public maptype: boolean;
+    public maptype!: boolean;
     @Prop({type: Boolean, default: false})
-    public geolocation: boolean;
-    @Prop({type: String, default: 'bmap'})
-    public mapType: string;
+    public geolocation!: boolean;
+    @Prop({type: String, default: 'amap'})
+    public mapType!: string;
     created() {
         EE.once('mapLoaded', () => {
             this.loadControls();
-            let empHasPoint = _.filter(empData.data, e => {
-                return e.lng !== null && e.lat !== null;
-            });
-            empHasPoint.forEach(eachPerson => {
-                this.map.addMarker({
-                    lng: eachPerson.lng,
-                    lat: eachPerson.lat,
-                    iconUrl: Env.IMG_URL + eachPerson.icon,
-                    content: eachPerson.name,
-                });
-            });
+            this.addEmpMarker(empData);
             facilityData.data.forEach(eachFacility => {
                 this.map.addMarker({
                     lng: eachFacility.lng,
                     lat: eachFacility.lat,
-                    iconUrl: Env.IMG_URL + eachFacility.icon,
+                    icon: Env.IMG_URL + eachFacility.icon,
                 });
             });
-            facilityData.data.forEach(eachFacility => {
-                this.map.addMarker({
-                    lng: eachFacility.lng,
-                    lat: eachFacility.lat,
-                    iconUrl: Env.IMG_URL + eachFacility.icon,
-                });
-            });
-            facilityData.data.forEach(eachFacility => {
-                this.map.addMarker({
-                    lng: eachFacility.lng,
-                    lat: eachFacility.lat,
-                    iconUrl: Env.IMG_URL + eachFacility.icon,
-                });
-            });
-            facilityData.data.forEach(eachFacility => {
-                this.map.addMarker({
-                    lng: eachFacility.lng,
-                    lat: eachFacility.lat,
-                    iconUrl: Env.IMG_URL + eachFacility.icon,
-                });
-            });
-            facilityData.data.forEach(eachFacility => {
-                this.map.addMarker({
-                    lng: eachFacility.lng,
-                    lat: eachFacility.lat,
-                    iconUrl: Env.IMG_URL + eachFacility.icon,
-                });
-            });
-            let empPoints = empHasPoint.map(e => {
-                return {lng: e.lng, lat: e.lat};
-            });
-            setTimeout(() => {
-                this.map.addText({
-                    lng: empPoints[0].lng,
-                    lat: empPoints[0].lat,
-                    content: 'Hello',
-                });
-                this.map.redraw();
-            }, 2000);
         });
     }
     mounted() {
@@ -110,6 +63,26 @@ export default class HelloWorld extends Vue {
         if (this.geolocation) {
             this.map.addGeolocation();
         }
+    }
+    public addEmpMarker(empData: any) {
+        // 去掉没有数据的Emp
+        let empHasPoint = _.filter(empData.data, e => {
+            return e.lng !== null && e.lat !== null;
+        });
+        // 构造Emp方法
+        let empOptions: Builders.EmpOptions[] = empHasPoint.map(eachPerson => {
+            return {
+                id: eachPerson.id,
+                lng: eachPerson.lng,
+                lat: eachPerson.lat,
+                icon: eachPerson.icon,
+            };
+        });
+        empOptions.map(empOption => {
+            return this.map.addMarker(
+                _.merge({}, Builders.DEFAULT_EMP_OPTIONS, empOption)
+            );
+        });
     }
 }
 </script>

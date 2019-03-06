@@ -16,7 +16,6 @@ export default class AmapCanvas extends MapBase {
         });
         me.canvas = document.createElement('canvas');
         me.map.on('complete', function() {
-            EE.emit('mapLoaded');
             me.canvas.width = me.map.getSize().width;
             me.canvas.height = me.map.getSize().height;
             // 将 canvas 宽高设置为地图实例的宽高
@@ -28,6 +27,7 @@ export default class AmapCanvas extends MapBase {
     }
 
     public update() {
+        EE.emit('mapLoaded');
         if (!this.paper) {
             this.paper = paper.setup(this.extra.canvas);
         } else {
@@ -40,7 +40,10 @@ export default class AmapCanvas extends MapBase {
     public gps2pix(lng: number, lat: number) {
         let gps = GPS2GCJ({lng: lng / 1000000, lat: lat / 1000000});
         var pix = this.map.lnglatTocontainer([gps.lng, gps.lat]);
-        return {x: pix.x, y: pix.y};
+        if (paper.view.bounds.contains(new paper.Point(pix.x, pix.y))) {
+            return {x: pix.x, y: pix.y};
+        }
+        return null;
     }
 
     /**

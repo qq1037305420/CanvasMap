@@ -2,9 +2,9 @@ import {MarkerBuilder} from './MarkerBuilder';
 import {PathBuilder} from './PathBuilder';
 import {TextBuilder} from './TextBuilder';
 import paper from 'paper';
-import LabeledMarker from './utils/LabeledMarker';
-let worker = require('worker!./webWorker.ts');
-
+import LabeledMarker from './LabeledMarker';
+import _ from 'lodash';
+import Env from './utils/Env';
 interface elements {
     path: any[];
     marker: any[];
@@ -14,7 +14,6 @@ export abstract class MapBase {
     public map: any;
     private elements: elements = {path: [], marker: [], text: []};
     public abstract init(container: HTMLElement | null): void;
-    public abstract update(canvas?: any): void;
     public abstract gps2pix(lng: number, lat: number): any;
     /**
      * Map Control Group
@@ -31,23 +30,14 @@ export abstract class MapBase {
     }
 
     public addMarker(option: any) {
-        if (!this.elements.marker) {
-            this.elements.marker = [];
-        }
         this.elements.marker.push(option);
     }
 
     public addPath(option: any) {
-        if (!this.elements.path) {
-            this.elements.path = [];
-        }
         this.elements.path.push(option);
     }
 
     public addText(option: any) {
-        if (!this.elements.text) {
-            this.elements.text = [];
-        }
         this.elements.text.push(option);
         // new TextBuilder(
         //     this.gps2pix(option.lng, option.lat),
@@ -57,44 +47,32 @@ export abstract class MapBase {
     }
 
     public drawMarker() {
-        let markerChunks = _.chunk(this.elements.marker, 50);
-        markerChunks.forEach(eachChunk => {
-            console.log(worker);
-            // worker.onmessage = function(event) {
-            //     console.log(event);
-            // };
-            this.buildMarker(eachChunk);
-            paper.view.draw();
-        });
+        let markerChunks = _.groupBy(this.elements.marker, 'icon');
+        for (let key in markerChunks) {
+            this.buildMarker(key, markerChunks[key]);
+        }
     }
 
-    public buildMarker(markerChunk: any) {
+    public buildMarker(key: string, markerChunk: any) {
+        let marker = new MarkerBuilder();
+        marker.setPosition({x: -100, y: -100});
+        marker.setIconUrl(key.indexOf('http') < 0 ? Env.IMG_URL + key : key);
+        let ppmarker = marker.build();
         markerChunk.forEach(e => {
+            let pix = this.gps2pix(e.lng, e.lat);
+            if (_.isEmpty(pix)) return;
             if (e.content) {
-                new LabeledMarker(
-                    this.gps2pix(e.lng, e.lat),
-                    e.iconUrl,
-                    0,
-                    e.content
-                ).build();
+                new LabeledMarker(pix, e.iconUrl, 0, e.content).build();
             } else {
-                const marker = new MarkerBuilder();
-                marker.setIconUrl(e.iconUrl);
-                marker.setPosition(this.gps2pix(e.lng, e.lat));
-                marker.build();
+                let newmarker = ppmarker.clone({insert: true, deep: false});
+                newmarker.position = pix;
+                newmarker.onClick = function(event) {
+                    console.log(event.point);
+                };
             }
         });
     }
     public draw() {
         this.drawMarker();
-        // this.elements.path.forEach(e => {
-        //     let pathPixels = e.points.map(x => {
-        //         return this.gps2pix(x.lng, x.lat);
-        //     });
-        //     new PathBuilder(pathPixels, e.pathType).build();
-        // });
-        // this.elements.text.forEach(e => {
-        //     new TextBuilder(this.gps2pix(e.lng, e.lat), e.content).build();
-        // });
     }
 }

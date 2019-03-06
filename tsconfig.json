@@ -1,12 +1,13 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "esnext",
         "module": "esnext",
-        "strict": true,
+        "strict": false,
         "jsx": "preserve",
         "importHelpers": true,
         "moduleResolution": "node",
         "experimentalDecorators": true,
+        "resolveJsonModule": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "sourceMap": true,
@@ -15,7 +16,7 @@
         "paths": {
             "@/*": ["src/*"]
         },
-        "lib": ["webworker", "es5", "dom", "dom.iterable", "scripthost"]
+        "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
     },
     "include": [
         "src/**/*.ts",
