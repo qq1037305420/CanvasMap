@@ -1,6 +1,4 @@
 import {MarkerBuilder} from './MarkerBuilder';
-import {PathBuilder} from './PathBuilder';
-import {TextBuilder} from './TextBuilder';
 import paper from 'paper';
 import LabeledMarker from './LabeledMarker';
 import _ from 'lodash';
@@ -25,10 +23,13 @@ export abstract class MapBase {
     public abstract addGeolocation(): void; // geolocation
 
     public redraw() {
+        paper.project.activeLayer.removeChildren();
         this.draw();
+    }
+    public draw() {
+        this.drawMarker();
         paper.view.draw();
     }
-
     public addMarker(option: any) {
         this.elements.marker.push(option);
     }
@@ -39,21 +40,16 @@ export abstract class MapBase {
 
     public addText(option: any) {
         this.elements.text.push(option);
-        // new TextBuilder(
-        //     this.gps2pix(option.lng, option.lat),
-        //     option.content
-        // ).build();
-        // this.redraw();
     }
 
-    public drawMarker() {
+    private drawMarker() {
         let markerChunks = _.groupBy(this.elements.marker, 'icon');
         for (let key in markerChunks) {
             this.buildMarker(key, markerChunks[key]);
         }
     }
 
-    public buildMarker(key: string, markerChunk: any) {
+    private buildMarker(key: string, markerChunk: any) {
         let marker = new MarkerBuilder();
         marker.setPosition({x: -100, y: -100});
         marker.setIconUrl(key.indexOf('http') < 0 ? Env.IMG_URL + key : key);
@@ -71,8 +67,5 @@ export abstract class MapBase {
                 };
             }
         });
-    }
-    public draw() {
-        this.drawMarker();
     }
 }

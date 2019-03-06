@@ -16,6 +16,7 @@ export default class AmapCanvas extends MapBase {
         });
         me.canvas = document.createElement('canvas');
         me.map.on('complete', function() {
+            EE.emit('mapLoaded');
             me.canvas.width = me.map.getSize().width;
             me.canvas.height = me.map.getSize().height;
             // 将 canvas 宽高设置为地图实例的宽高
@@ -26,15 +27,13 @@ export default class AmapCanvas extends MapBase {
         });
     }
 
-    public update() {
-        EE.emit('mapLoaded');
-        if (!this.paper) {
-            this.paper = paper.setup(this.extra.canvas);
+    private update() {
+        if (!this.extra.paper) {
+            this.extra.paper = paper.setup(this.extra.canvas);
         } else {
             paper.project.activeLayer.removeChildren();
         }
         this.extra.draw();
-        paper.view.draw();
     }
 
     public gps2pix(lng: number, lat: number) {

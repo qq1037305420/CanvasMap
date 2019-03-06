@@ -26,14 +26,13 @@ export default class BmapCanvas extends MapBase {
         return {x: pix.x, y: pix.y};
     }
 
-    public update() {
+    private update() {
         if (!this.extra.paper) {
             this.extra.paper = paper.setup(this.canvas);
         } else {
             paper.project.activeLayer.removeChildren();
         }
         this.extra.draw();
-        paper.view.draw();
     }
 
     /**

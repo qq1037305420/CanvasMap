@@ -6,13 +6,10 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import MapFactory from '@/map/MapFactory';
 import _ from 'lodash';
-import empData from './empData.json';
-import facilityData from './facility.json';
 import EE from '@/map/EventBus';
 import {MapBase} from '@/map/MapBase';
-import {PathType} from '@/map/PathBuilder';
-import Env from '@/map/utils/Env';
 import * as Builders from '@/map/utils/Builders';
+import facilityData from './facility.json';
 
 @Component
 export default class HelloWorld extends Vue {
@@ -32,14 +29,18 @@ export default class HelloWorld extends Vue {
     created() {
         EE.once('mapLoaded', () => {
             this.loadControls();
-            this.addEmpMarker(empData);
-            facilityData.data.forEach(eachFacility => {
-                this.map.addMarker({
-                    lng: eachFacility.lng,
-                    lat: eachFacility.lat,
-                    icon: Env.IMG_URL + eachFacility.icon,
-                });
-            });
+            // setTimeout(() => {
+            //     facilityData.data.forEach(eachFacility => {
+            //         this.map.addMarker({
+            //             lng: eachFacility.lng,
+            //             lat: eachFacility.lat,
+            //             icon: eachFacility.icon,
+            //         });
+            //     });
+            // }, 200);
+            // setTimeout(() => {
+            //     this.map.draw();
+            // }, 500);
         });
     }
     mounted() {
@@ -64,20 +65,9 @@ export default class HelloWorld extends Vue {
             this.map.addGeolocation();
         }
     }
-    public addEmpMarker(empData: any) {
-        // 去掉没有数据的Emp
-        let empHasPoint = _.filter(empData.data, e => {
-            return e.lng !== null && e.lat !== null;
-        });
-        // 构造Emp方法
-        let empOptions: Builders.EmpOptions[] = empHasPoint.map(eachPerson => {
-            return {
-                id: eachPerson.id,
-                lng: eachPerson.lng,
-                lat: eachPerson.lat,
-                icon: eachPerson.icon,
-            };
-        });
+
+    public addEmpMarker(empOptions: Builders.EmpOptions[]) {
+        console.log(111111111);
         empOptions.map(empOption => {
             return this.map.addMarker(
                 _.merge({}, Builders.DEFAULT_EMP_OPTIONS, empOption)
