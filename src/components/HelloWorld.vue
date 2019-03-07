@@ -29,18 +29,20 @@ export default class HelloWorld extends Vue {
     created() {
         EE.once('mapLoaded', () => {
             this.loadControls();
-            // setTimeout(() => {
-            //     facilityData.data.forEach(eachFacility => {
-            //         this.map.addMarker({
-            //             lng: eachFacility.lng,
-            //             lat: eachFacility.lat,
-            //             icon: eachFacility.icon,
-            //         });
+            facilityData.data.forEach(eachFacility => {
+                this.map.addMarker({
+                    lng: eachFacility.lng,
+                    lat: eachFacility.lat,
+                    icon: eachFacility.icon,
+                });
+            });
+            // facilityData.data.forEach(eachFacility => {
+            //     this.map.addMarker({
+            //         lng: eachFacility.lng,
+            //         lat: eachFacility.lat,
+            //         icon: eachFacility.icon,
             //     });
-            // }, 200);
-            // setTimeout(() => {
-            //     this.map.draw();
-            // }, 500);
+            // });
         });
     }
     mounted() {

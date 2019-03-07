@@ -24,23 +24,26 @@ export default class AmapCanvas extends MapBase {
             canvasLayer.extra = me;
             canvasLayer.setMap(me.map);
             canvasLayer.render = me.update;
+            paper.setup(me.canvas);
         });
     }
 
     private update() {
-        if (!this.extra.paper) {
-            this.extra.paper = paper.setup(this.extra.canvas);
-        } else {
-            paper.project.activeLayer.removeChildren();
-        }
-        this.extra.draw();
+        let that = this.extra;
+        paper.project.activeLayer.removeChildren();
+        // clearTimeout(that.timeoutID);
+        // that.timeoutID = setTimeout(function() {
+        that.draw();
+        // }, 15);
     }
 
+    public gpsCoor(lng: number, lat: number) {
+        return GPS2GCJ({lng: lng / 1000000, lat: lat / 1000000});
+    }
     public gps2pix(lng: number, lat: number) {
-        let gps = GPS2GCJ({lng: lng / 1000000, lat: lat / 1000000});
-        var pix = this.map.lnglatTocontainer([gps.lng, gps.lat]);
+        var pix = this.map.lnglatTocontainer([lng, lat]);
         if (paper.view.bounds.contains(new paper.Point(pix.x, pix.y))) {
-            return {x: pix.x, y: pix.y};
+            return new paper.Point(pix.x, pix.y);
         }
         return null;
     }

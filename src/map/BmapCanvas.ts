@@ -19,11 +19,12 @@ export default class BmapCanvas extends MapBase {
     }
 
     public gps2pix(lng: number, lat: number) {
-        let gps = GPS2GCJ({lng: lng / 1000000, lat: lat / 1000000});
-        gps = GCJ2BD({lng: gps.lng, lat: gps.lat});
-        gps = new BMap.Point(gps.lng, gps.lat);
-        let pix = this.map.pointToPixel(gps);
+        let pix = this.map.pointToPixel(new BMap.Point(lng, lat));
         return {x: pix.x, y: pix.y};
+    }
+    public gpsCoor(lng: number, lat: number) {
+        let gps = GPS2GCJ({lng: lng / 1000000, lat: lat / 1000000});
+        return GCJ2BD({lng: gps.lng, lat: gps.lat});
     }
 
     private update() {

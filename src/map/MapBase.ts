@@ -12,7 +12,8 @@ export abstract class MapBase {
     public map: any;
     private elements: elements = {path: [], marker: [], text: []};
     public abstract init(container: HTMLElement | null): void;
-    public abstract gps2pix(lng: number, lat: number): any;
+    public abstract gps2pix(lng: number, lat: number): paper.Point | null;
+    public abstract gpsCoor(lng: number, lat: number): any;
     /**
      * Map Control Group
      */
@@ -30,15 +31,25 @@ export abstract class MapBase {
         this.drawMarker();
         paper.view.draw();
     }
+
     public addMarker(option: any) {
+        let gps = this.gpsCoor(option.lng, option.lat);
+        option.lng = gps.lng;
+        option.lat = gps.lat;
         this.elements.marker.push(option);
     }
 
     public addPath(option: any) {
+        let gps = this.gpsCoor(option.lng, option.lat);
+        option.lng = gps.lng;
+        option.lat = gps.lat;
         this.elements.path.push(option);
     }
 
     public addText(option: any) {
+        let gps = this.gpsCoor(option.lng, option.lat);
+        option.lng = gps.lng;
+        option.lat = gps.lat;
         this.elements.text.push(option);
     }
 
@@ -54,18 +65,29 @@ export abstract class MapBase {
         marker.setPosition({x: -100, y: -100});
         marker.setIconUrl(key.indexOf('http') < 0 ? Env.IMG_URL + key : key);
         let ppmarker = marker.build();
-        markerChunk.forEach(e => {
-            let pix = this.gps2pix(e.lng, e.lat);
-            if (_.isEmpty(pix)) return;
-            if (e.content) {
-                new LabeledMarker(pix, e.iconUrl, 0, e.content).build();
-            } else {
-                let newmarker = ppmarker.clone({insert: true, deep: false});
-                newmarker.position = pix;
-                newmarker.onClick = function(event) {
-                    console.log(event.point);
-                };
+        _.filter(
+            markerChunk.map(e => {
+                return this.gps2pix(e.lng, e.lat);
+            }),
+            e => {
+                return e;
             }
+        ).forEach(pix => {
+            let symbol = new paper.Symbol(ppmarker);
+            symbol = symbol.place(pix);
         });
+        // markerChunk.forEach(e => {
+        //     if (_.isEmpty(pix)) return;
+
+        //     // if (e.content) {
+        //     //     new LabeledMarker(pix, e.iconUrl, 0, e.content).build();
+        //     // } else {
+        //     //     let newmarker = ppmarker.clone({insert: true, deep: false});
+        //     //     newmarker.position = pix;
+        //     //     // newmarker.onClick = function(event) {
+        //     //     //     console.log(event.point);
+        //     //     // };
+        //     // }
+        // });
     }
 }
