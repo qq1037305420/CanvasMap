@@ -36,6 +36,34 @@ export default class HelloWorld extends Vue {
                     icon: eachFacility.icon,
                 });
             });
+            facilityData.data.forEach(eachFacility => {
+                this.map.addMarker({
+                    lng: eachFacility.lng,
+                    lat: eachFacility.lat,
+                    icon: eachFacility.icon,
+                });
+            });
+            facilityData.data.forEach(eachFacility => {
+                this.map.addMarker({
+                    lng: eachFacility.lng,
+                    lat: eachFacility.lat,
+                    icon: eachFacility.icon,
+                });
+            });
+            facilityData.data.forEach(eachFacility => {
+                this.map.addMarker({
+                    lng: eachFacility.lng,
+                    lat: eachFacility.lat,
+                    icon: eachFacility.icon,
+                });
+            });
+            facilityData.data.forEach(eachFacility => {
+                this.map.addMarker({
+                    lng: eachFacility.lng,
+                    lat: eachFacility.lat,
+                    icon: eachFacility.icon,
+                });
+            });
         });
     }
     mounted() {
@@ -75,8 +103,5 @@ export default class HelloWorld extends Vue {
 #hello {
     height: 100%;
     width: 100%;
-}
-.amap-custom {
-    position: fixed;
 }
 </style>

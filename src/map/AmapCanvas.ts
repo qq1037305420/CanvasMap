@@ -15,9 +15,9 @@ export default class AmapCanvas extends MapBase {
             zoom: 12,
         });
         me.canvas = document.createElement('canvas');
-        me.map.on('dragging', () => {
-            this.update();
-        });
+        // me.map.on('mapmove', () => {
+        //     this.update();
+        // });
         me.map.on('complete', function() {
             EE.emit('mapLoaded');
             me.canvas.width = me.map.getSize().width;
@@ -34,7 +34,6 @@ export default class AmapCanvas extends MapBase {
                 me.map.getSize().width,
                 me.map.getSize().height
             );
-            console.log(me.rectangle);
         });
     }
 
@@ -57,7 +56,7 @@ export default class AmapCanvas extends MapBase {
             return {x: pix.x, y: pix.y};
         }
         // }
-        // return null;
+        return null;
     }
 
     /**
