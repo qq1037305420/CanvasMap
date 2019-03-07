@@ -36,13 +36,6 @@ export default class HelloWorld extends Vue {
                     icon: eachFacility.icon,
                 });
             });
-            // facilityData.data.forEach(eachFacility => {
-            //     this.map.addMarker({
-            //         lng: eachFacility.lng,
-            //         lat: eachFacility.lat,
-            //         icon: eachFacility.icon,
-            //     });
-            // });
         });
     }
     mounted() {
@@ -69,12 +62,12 @@ export default class HelloWorld extends Vue {
     }
 
     public addEmpMarker(empOptions: Builders.EmpOptions[]) {
-        console.log(111111111);
         empOptions.map(empOption => {
             return this.map.addMarker(
                 _.merge({}, Builders.DEFAULT_EMP_OPTIONS, empOption)
             );
         });
+        this.map.draw();
     }
 }
 </script>
@@ -82,5 +75,8 @@ export default class HelloWorld extends Vue {
 #hello {
     height: 100%;
     width: 100%;
+}
+.amap-custom {
+    position: fixed;
 }
 </style>

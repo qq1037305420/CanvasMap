@@ -3,18 +3,21 @@ import {MapBase} from './MapBase';
 import _ from 'lodash';
 import {GPS2GCJ} from './coordinate';
 import EE from './EventBus';
-import paper from 'paper';
+import zrender from 'zrender';
 
 export default class AmapCanvas extends MapBase {
     private extra: any;
-    private paper: any;
     private canvas: any;
+    private rectangle: any;
     public init(container: HTMLDivElement) {
         const me = this;
         me.map = new AMap.Map(container, {
             zoom: 12,
         });
         me.canvas = document.createElement('canvas');
+        me.map.on('dragging', () => {
+            this.update();
+        });
         me.map.on('complete', function() {
             EE.emit('mapLoaded');
             me.canvas.width = me.map.getSize().width;
@@ -24,17 +27,25 @@ export default class AmapCanvas extends MapBase {
             canvasLayer.extra = me;
             canvasLayer.setMap(me.map);
             canvasLayer.render = me.update;
-            paper.setup(me.canvas);
+            me.zr = zrender.init(me.canvas);
+            me.rectangle = new zrender.BoundingRect(
+                0,
+                0,
+                me.map.getSize().width,
+                me.map.getSize().height
+            );
+            console.log(me.rectangle);
         });
     }
 
     private update() {
-        let that = this.extra;
-        paper.project.activeLayer.removeChildren();
+        let that = this.extra ? this.extra : this;
         // clearTimeout(that.timeoutID);
         // that.timeoutID = setTimeout(function() {
+        // console.log('drawing');
+        that.zr.clear();
         that.draw();
-        // }, 15);
+        // }, 50);
     }
 
     public gpsCoor(lng: number, lat: number) {
@@ -42,10 +53,11 @@ export default class AmapCanvas extends MapBase {
     }
     public gps2pix(lng: number, lat: number) {
         var pix = this.map.lnglatTocontainer([lng, lat]);
-        if (paper.view.bounds.contains(new paper.Point(pix.x, pix.y))) {
-            return new paper.Point(pix.x, pix.y);
+        if (this.rectangle.contain(pix.x, pix.y)) {
+            return {x: pix.x, y: pix.y};
         }
-        return null;
+        // }
+        // return null;
     }
 
     /**

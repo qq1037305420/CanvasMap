@@ -1,8 +1,9 @@
 import {MarkerBuilder} from './MarkerBuilder';
-import paper from 'paper';
 import LabeledMarker from './LabeledMarker';
 import _ from 'lodash';
 import Env from './utils/Env';
+import zrender from 'zrender';
+
 interface elements {
     path: any[];
     marker: any[];
@@ -10,9 +11,10 @@ interface elements {
 }
 export abstract class MapBase {
     public map: any;
+    public zr: any;
     private elements: elements = {path: [], marker: [], text: []};
     public abstract init(container: HTMLElement | null): void;
-    public abstract gps2pix(lng: number, lat: number): paper.Point | null;
+    public abstract gps2pix(lng: number, lat: number): object | null;
     public abstract gpsCoor(lng: number, lat: number): any;
     /**
      * Map Control Group
@@ -24,12 +26,11 @@ export abstract class MapBase {
     public abstract addGeolocation(): void; // geolocation
 
     public redraw() {
-        paper.project.activeLayer.removeChildren();
         this.draw();
     }
     public draw() {
         this.drawMarker();
-        paper.view.draw();
+        this.zr.flush();
     }
 
     public addMarker(option: any) {
@@ -61,33 +62,25 @@ export abstract class MapBase {
     }
 
     private buildMarker(key: string, markerChunk: any) {
-        let marker = new MarkerBuilder();
-        marker.setPosition({x: -100, y: -100});
-        marker.setIconUrl(key.indexOf('http') < 0 ? Env.IMG_URL + key : key);
-        let ppmarker = marker.build();
         _.filter(
             markerChunk.map(e => {
-                return this.gps2pix(e.lng, e.lat);
+                let pix = this.gps2pix(e.lng, e.lat);
+                if (_.isEmpty(pix)) return;
+                return _.merge({}, pix, {icon: e.icon});
             }),
             e => {
                 return e;
             }
         ).forEach(pix => {
-            let symbol = new paper.Symbol(ppmarker);
-            symbol = symbol.place(pix);
+            this.zr.add(
+                new zrender.Image({
+                    style: {
+                        image: Env.IMG_URL + pix.icon,
+                        x: pix.x,
+                        y: pix.y,
+                    },
+                })
+            );
         });
-        // markerChunk.forEach(e => {
-        //     if (_.isEmpty(pix)) return;
-
-        //     // if (e.content) {
-        //     //     new LabeledMarker(pix, e.iconUrl, 0, e.content).build();
-        //     // } else {
-        //     //     let newmarker = ppmarker.clone({insert: true, deep: false});
-        //     //     newmarker.position = pix;
-        //     //     // newmarker.onClick = function(event) {
-        //     //     //     console.log(event.point);
-        //     //     // };
-        //     // }
-        // });
     }
 }
