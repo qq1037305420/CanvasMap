@@ -37,6 +37,18 @@ export default class AmapCanvas extends MapBase {
         });
     }
 
+    public getBounds() {
+        let bounds = this.map.getBounds();
+        let size = this.map.getSize();
+        return {
+            minlng: bounds.southwest['lng'],
+            minlat: bounds.southwest['lat'],
+            maxlng: bounds.northeast['lng'],
+            maxlat: bounds.northeast['lat'],
+            width: size.width,
+            height: size.height,
+        };
+    }
     private update() {
         let that = this.extra ? this.extra : this;
         // clearTimeout(that.timeoutID);
@@ -55,7 +67,6 @@ export default class AmapCanvas extends MapBase {
         if (this.rectangle.contain(pix.x, pix.y)) {
             return {x: pix.x, y: pix.y};
         }
-        // }
         return null;
     }
 

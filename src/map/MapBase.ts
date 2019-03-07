@@ -3,6 +3,7 @@ import LabeledMarker from './LabeledMarker';
 import _ from 'lodash';
 import Env from './utils/Env';
 import zrender from 'zrender';
+// import PixelWorker from 'worker-loader!@/map/Worker.js';
 
 interface elements {
     path: any[];
@@ -12,10 +13,13 @@ interface elements {
 export abstract class MapBase {
     public map: any;
     public zr: any;
+    public worker: any;
+
     private elements: elements = {path: [], marker: [], text: []};
     public abstract init(container: HTMLElement | null): void;
     public abstract gps2pix(lng: number, lat: number): object | null;
     public abstract gpsCoor(lng: number, lat: number): any;
+    public abstract getBounds(): any;
     /**
      * Map Control Group
      */
@@ -25,18 +29,12 @@ export abstract class MapBase {
     public abstract addOverView(): void; // OverView MapControl
     public abstract addGeolocation(): void; // geolocation
 
-    public redraw() {
-        this.draw();
-    }
     public draw() {
         this.drawMarker();
         this.zr.flush();
     }
 
     public addMarker(option: any) {
-        let gps = this.gpsCoor(option.lng, option.lat);
-        option.lng = gps.lng;
-        option.lat = gps.lat;
         this.elements.marker.push(option);
     }
 

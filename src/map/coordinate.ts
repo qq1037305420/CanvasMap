@@ -104,3 +104,46 @@ export function GCJ2GPS(p: IPoint): IPoint {
     const lat = 2 * p.lat - pp.lat;
     return {lng, lat};
 }
+
+export class Coord2Pix {
+    maxLon: number;
+    minLon: number;
+    maxLat: number;
+    minLat: number;
+    h: number;
+    w: number;
+    scaleX: number;
+    scaleY: number;
+    constructor(
+        maxLon: number,
+        minLon: number,
+        maxLat: number,
+        minLat: number,
+        h: number,
+        w: number
+    ) {
+        this.maxLon = maxLon;
+        this.minLon = minLon;
+        this.maxLat = maxLat;
+        this.minLat = minLat;
+        this.h = h;
+        this.w = w;
+        this.scaleX = ((maxLon - minLon) * 3600) / w;
+        this.scaleY = ((maxLat - minLat) * 3600) / h;
+    }
+    public corrd2pix(lng: number, lat: number) {
+        let x = ((lng - this.minLon) * 3600) / this.scaleX;
+        let y = ((this.maxLat - lat) * 3600) / this.scaleY;
+        return {x: x, y: y};
+    }
+    public pix2corrd(x: number, y: number) {
+        let lng = (x * this.scaleX) / 3600 + this.minLon;
+        let lat = this.maxLat - (y * this.scaleY) / 3600;
+        return {lng: lng, lat: lat};
+    }
+    public contain(x: number, y: number) {
+        if (x < 0 || x > this.w) return false;
+        if (y < 0 || y > this.h) return false;
+        return true;
+    }
+}

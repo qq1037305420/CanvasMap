@@ -10,6 +10,7 @@ import EE from '@/map/EventBus';
 import {MapBase} from '@/map/MapBase';
 import * as Builders from '@/map/utils/Builders';
 import facilityData from './facility.json';
+import Worker from 'worker-loader!@/map/Worker.js';
 
 @Component
 export default class HelloWorld extends Vue {
@@ -26,44 +27,13 @@ export default class HelloWorld extends Vue {
     public geolocation!: boolean;
     @Prop({type: String, default: 'amap'})
     public mapType!: string;
+    public worker = new Worker();
     created() {
         EE.once('mapLoaded', () => {
             this.loadControls();
-            facilityData.data.forEach(eachFacility => {
-                this.map.addMarker({
-                    lng: eachFacility.lng,
-                    lat: eachFacility.lat,
-                    icon: eachFacility.icon,
-                });
-            });
-            facilityData.data.forEach(eachFacility => {
-                this.map.addMarker({
-                    lng: eachFacility.lng,
-                    lat: eachFacility.lat,
-                    icon: eachFacility.icon,
-                });
-            });
-            facilityData.data.forEach(eachFacility => {
-                this.map.addMarker({
-                    lng: eachFacility.lng,
-                    lat: eachFacility.lat,
-                    icon: eachFacility.icon,
-                });
-            });
-            facilityData.data.forEach(eachFacility => {
-                this.map.addMarker({
-                    lng: eachFacility.lng,
-                    lat: eachFacility.lat,
-                    icon: eachFacility.icon,
-                });
-            });
-            facilityData.data.forEach(eachFacility => {
-                this.map.addMarker({
-                    lng: eachFacility.lng,
-                    lat: eachFacility.lat,
-                    icon: eachFacility.icon,
-                });
-            });
+            this.addEmpMarker(facilityData.data);
+            this.addEmpMarker(facilityData.data);
+            this.addEmpMarker(facilityData.data);
         });
     }
     mounted() {
@@ -90,12 +60,20 @@ export default class HelloWorld extends Vue {
     }
 
     public addEmpMarker(empOptions: Builders.EmpOptions[]) {
-        empOptions.map(empOption => {
-            return this.map.addMarker(
-                _.merge({}, Builders.DEFAULT_EMP_OPTIONS, empOption)
-            );
+        let me = this;
+        this.worker.postMessage({
+            data: empOptions,
+            type: 'GCJ',
         });
-        this.map.draw();
+        this.worker.onmessage = e => {
+            e.data.map(empOption => {
+                return this.map.addMarker(
+                    _.merge({}, Builders.DEFAULT_EMP_OPTIONS, empOption)
+                );
+            });
+            this.map.draw();
+            this.worker.terminate();
+        };
     }
 }
 </script>
