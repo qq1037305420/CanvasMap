@@ -25,7 +25,7 @@ export default class HelloWorld extends Vue {
     public maptype!: boolean;
     @Prop({type: Boolean, default: false})
     public geolocation!: boolean;
-    @Prop({type: String, default: 'amap'})
+    @Prop({type: String, default: 'bmap'})
     public mapType!: string;
     public worker = new Worker();
     created() {
@@ -63,8 +63,9 @@ export default class HelloWorld extends Vue {
         let me = this;
         this.worker.postMessage({
             data: empOptions,
-            type: 'GCJ',
+            type: 'BD',
         });
+
         this.worker.onmessage = e => {
             e.data.map(empOption => {
                 return this.map.addMarker(
@@ -72,7 +73,6 @@ export default class HelloWorld extends Vue {
                 );
             });
             this.map.draw();
-            this.worker.terminate();
         };
     }
 }

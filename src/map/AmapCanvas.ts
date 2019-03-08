@@ -1,25 +1,19 @@
 /* global AMap */
 import {MapBase} from './MapBase';
 import _ from 'lodash';
-import {GPS2GCJ} from './coordinate';
 import EE from './EventBus';
 import zrender from 'zrender';
 
 export default class AmapCanvas extends MapBase {
     private extra: any;
     private canvas: any;
-    private rectangle: any;
     public init(container: HTMLDivElement) {
         const me = this;
         me.map = new AMap.Map(container, {
             zoom: 12,
         });
         me.canvas = document.createElement('canvas');
-        // me.map.on('mapmove', () => {
-        //     this.update();
-        // });
         me.map.on('complete', function() {
-            EE.emit('mapLoaded');
             me.canvas.width = me.map.getSize().width;
             me.canvas.height = me.map.getSize().height;
             // 将 canvas 宽高设置为地图实例的宽高
@@ -28,12 +22,7 @@ export default class AmapCanvas extends MapBase {
             canvasLayer.setMap(me.map);
             canvasLayer.render = me.update;
             me.zr = zrender.init(me.canvas);
-            me.rectangle = new zrender.BoundingRect(
-                0,
-                0,
-                me.map.getSize().width,
-                me.map.getSize().height
-            );
+            EE.emit('mapLoaded');
         });
     }
 
@@ -51,23 +40,14 @@ export default class AmapCanvas extends MapBase {
     }
     private update() {
         let that = this.extra ? this.extra : this;
-        // clearTimeout(that.timeoutID);
-        // that.timeoutID = setTimeout(function() {
-        // console.log('drawing');
         that.zr.clear();
         that.draw();
-        // }, 50);
     }
 
-    public gpsCoor(lng: number, lat: number) {
-        return GPS2GCJ({lng: lng / 1000000, lat: lat / 1000000});
-    }
     public gps2pix(lng: number, lat: number) {
-        var pix = this.map.lnglatTocontainer([lng, lat]);
-        if (this.rectangle.contain(pix.x, pix.y)) {
-            return {x: pix.x, y: pix.y};
-        }
-        return null;
+        return this.map.getBounds().contains([lng, lat])
+            ? this.map.lnglatTocontainer([lng, lat])
+            : null;
     }
 
     /**

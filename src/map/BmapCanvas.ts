@@ -1,39 +1,42 @@
 /* global BMap */
 import {MapBase} from './MapBase';
-import paper from 'paper';
-import {GPS2GCJ, GCJ2BD} from './coordinate';
 import EE from './EventBus';
+import zrender from 'zrender';
+import _ from 'lodash';
 export default class BmapCanvas extends MapBase {
     private extra: any;
-    private paper: any;
     private canvas: any;
+
     public init(container: HTMLElement) {
         this.map = new BMap.Map(container);
         this.map.centerAndZoom(new BMap.Point(116.404, 39.915), 12);
-        EE.emit('mapLoaded');
         this.map.setCurrentCity('北京');
         this.map.enableScrollWheelZoom(true);
-        this.canvas = new BMap.CanvasLayer({update: this.update});
-        this.canvas.extra = this;
-        this.map.addOverlay(this.canvas);
+        let bmapCanvas = new BMap.CanvasLayer({update: this.update});
+        this.map.addOverlay(bmapCanvas);
+        this.canvas = bmapCanvas.canvas;
+        this.zr = zrender.init(this.canvas);
+        this.canvas.height = this.map.getSize().height;
+        this.canvas.width = this.map.getSize().width;
+        bmapCanvas.extra = this;
+        EE.emit('mapLoaded');
     }
-
+    public getBounds() {
+        let bounds = this.map.getBounds();
+        let size = this.map.getSize();
+        return _.merge({}, bounds, size);
+    }
     public gps2pix(lng: number, lat: number) {
-        let pix = this.map.pointToPixel(new BMap.Point(lng, lat));
-        return {x: pix.x, y: pix.y};
-    }
-    public gpsCoor(lng: number, lat: number) {
-        let gps = GPS2GCJ({lng: lng / 1000000, lat: lat / 1000000});
-        return GCJ2BD({lng: gps.lng, lat: gps.lat});
+        let bmappoint = new BMap.Point(lng, lat);
+        return this.map.getBounds().containsPoint(bmappoint)
+            ? this.map.pointToPixel(bmappoint)
+            : null;
     }
 
     private update() {
-        if (!this.extra.paper) {
-            this.extra.paper = paper.setup(this.canvas);
-        } else {
-            paper.project.activeLayer.removeChildren();
-        }
-        this.extra.draw();
+        let that = this.extra ? this.extra : this;
+        that.zr.clear();
+        that.draw();
     }
 
     /**

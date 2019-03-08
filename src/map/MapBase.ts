@@ -18,7 +18,6 @@ export abstract class MapBase {
     private elements: elements = {path: [], marker: [], text: []};
     public abstract init(container: HTMLElement | null): void;
     public abstract gps2pix(lng: number, lat: number): object | null;
-    public abstract gpsCoor(lng: number, lat: number): any;
     public abstract getBounds(): any;
     /**
      * Map Control Group
@@ -39,16 +38,10 @@ export abstract class MapBase {
     }
 
     public addPath(option: any) {
-        let gps = this.gpsCoor(option.lng, option.lat);
-        option.lng = gps.lng;
-        option.lat = gps.lat;
         this.elements.path.push(option);
     }
 
     public addText(option: any) {
-        let gps = this.gpsCoor(option.lng, option.lat);
-        option.lng = gps.lng;
-        option.lat = gps.lat;
         this.elements.text.push(option);
     }
 
@@ -63,8 +56,7 @@ export abstract class MapBase {
         _.filter(
             markerChunk.map(e => {
                 let pix = this.gps2pix(e.lng, e.lat);
-                if (_.isEmpty(pix)) return;
-                return _.merge({}, pix, {icon: e.icon});
+                return _.isEmpty(pix) ? null : _.merge({}, pix, {icon: e.icon});
             }),
             e => {
                 return e;
