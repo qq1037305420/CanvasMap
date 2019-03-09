@@ -36,6 +36,7 @@ export default class AmapCanvas extends MapBase {
             maxlat: bounds.northeast['lat'],
             width: size.width,
             height: size.height,
+            zoom: this.map.getZoom(),
         };
     }
     private update() {

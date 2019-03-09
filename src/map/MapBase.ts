@@ -3,19 +3,22 @@ import LabeledMarker from './LabeledMarker';
 import _ from 'lodash';
 import Env from './utils/Env';
 import zrender from 'zrender';
+import geojson from 'geojson';
 // import PixelWorker from 'worker-loader!@/map/Worker.js';
+import * as Terraformer from 'terraformer';
+import {GEOSTORE} from '@/map/utils/DataSet';
+import Supercluster from 'supercluster';
+var geojsonCoords = require('@mapbox/geojson-coords');
 
-interface elements {
-    path: any[];
-    marker: any[];
-    text: any[];
-}
 export abstract class MapBase {
     public map: any;
     public zr: any;
     public worker: any;
-
-    private elements: elements = {path: [], marker: [], text: []};
+    // public totalPoints: any[] = [];
+    public SuperCluster = new Supercluster({
+        radius: 400,
+        maxZoom: 16,
+    });
     public abstract init(container: HTMLElement | null): void;
     public abstract gps2pix(lng: number, lat: number): object | null;
     public abstract getBounds(): any;
@@ -34,43 +37,65 @@ export abstract class MapBase {
     }
 
     public addMarker(option: any) {
-        this.elements.marker.push(option);
-    }
-
-    public addPath(option: any) {
-        this.elements.path.push(option);
-    }
-
-    public addText(option: any) {
-        this.elements.text.push(option);
+        GEOSTORE.add(
+            new Terraformer.Feature({
+                type: 'Feature',
+                id: option.id,
+                properties: {icon: option.icon, type: option.eventName},
+                geometry: {
+                    type: 'Point',
+                    coordinates: [option.lng, option.lat],
+                },
+            })
+        );
     }
 
     private drawMarker() {
-        let markerChunks = _.groupBy(this.elements.marker, 'icon');
-        for (let key in markerChunks) {
-            this.buildMarker(key, markerChunks[key]);
-        }
-    }
-
-    private buildMarker(key: string, markerChunk: any) {
-        _.filter(
-            markerChunk.map(e => {
-                let pix = this.gps2pix(e.lng, e.lat);
-                return _.isEmpty(pix) ? null : _.merge({}, pix, {icon: e.icon});
-            }),
-            e => {
-                return e;
+        this.SuperCluster.load(Object.values(GEOSTORE.store.data));
+        let bounds = this.getBounds();
+        let clusterData = this.SuperCluster.getClusters(
+            [bounds.minlng, bounds.minlat, bounds.maxlng, bounds.maxlat],
+            bounds.zoom
+        );
+        clusterData.forEach(element => {
+            let elementPoints = geojsonCoords(element);
+            if (
+                element.type === 'Feature' &&
+                element.geometry.type === 'Point'
+            ) {
+                let pix = this.gps2pix(
+                    elementPoints[0][0],
+                    elementPoints[0][1]
+                );
+                if (_.isEmpty(pix)) return;
+                if (element.properties.cluster === true) {
+                    let clusterCount = element.properties.point_count;
+                    this.zr.add(
+                        new zrender.Circle({
+                            shape: {
+                                cx: pix.x,
+                                cy: pix.y,
+                                r: 30,
+                            },
+                            style: {
+                                fill: 'none',
+                                stroke: '#F00',
+                                text: clusterCount,
+                            },
+                        })
+                    );
+                } else {
+                    this.zr.add(
+                        new zrender.Image({
+                            style: {
+                                image: Env.IMG_URL + element.properties.icon,
+                                x: pix.x,
+                                y: pix.y,
+                            },
+                        })
+                    );
+                }
             }
-        ).forEach(pix => {
-            this.zr.add(
-                new zrender.Image({
-                    style: {
-                        image: Env.IMG_URL + pix.icon,
-                        x: pix.x,
-                        y: pix.y,
-                    },
-                })
-            );
         });
     }
 }

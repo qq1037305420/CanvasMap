@@ -9,11 +9,18 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@mapbox/geojson-coords": "0.0.0",
+    "@types/geojson": "^7946.0.6",
     "@types/lodash": "^4.14.122",
     "@types/paper": "^0.11.9",
     "eventemitter3": "^3.1.0",
     "lodash": "^4.17.11",
     "paper": "^0.11.8",
+    "supercluster": "^4.1.1",
+    "terraformer": "^1.0.9",
+    "terraformer-geostore": "^1.0.5",
+    "terraformer-geostore-memory": "^1.0.0",
+    "terraformer-rtree": "^1.0.0",
     "vue": "^2.6.6",
     "vue-class-component": "^6.0.0",
     "vue-property-decorator": "^7.0.0",

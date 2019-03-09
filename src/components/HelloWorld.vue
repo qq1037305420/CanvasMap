@@ -25,14 +25,12 @@ export default class HelloWorld extends Vue {
     public maptype!: boolean;
     @Prop({type: Boolean, default: false})
     public geolocation!: boolean;
-    @Prop({type: String, default: 'bmap'})
+    @Prop({type: String, default: 'amap'})
     public mapType!: string;
     public worker = new Worker();
     created() {
         EE.once('mapLoaded', () => {
             this.loadControls();
-            this.addEmpMarker(facilityData.data);
-            this.addEmpMarker(facilityData.data);
             this.addEmpMarker(facilityData.data);
         });
     }
@@ -63,7 +61,7 @@ export default class HelloWorld extends Vue {
         let me = this;
         this.worker.postMessage({
             data: empOptions,
-            type: 'BD',
+            type: 'GCJ',
         });
 
         this.worker.onmessage = e => {

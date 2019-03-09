@@ -9,7 +9,10 @@ export default class BmapCanvas extends MapBase {
 
     public init(container: HTMLElement) {
         this.map = new BMap.Map(container);
-        this.map.centerAndZoom(new BMap.Point(116.404, 39.915), 12);
+        this.map.centerAndZoom(
+            new BMap.Point(120.17047335303083, 35.97316165527997),
+            12
+        );
         this.map.setCurrentCity('北京');
         this.map.enableScrollWheelZoom(true);
         let bmapCanvas = new BMap.CanvasLayer({update: this.update});
@@ -24,7 +27,15 @@ export default class BmapCanvas extends MapBase {
     public getBounds() {
         let bounds = this.map.getBounds();
         let size = this.map.getSize();
-        return _.merge({}, bounds, size);
+        return {
+            minlng: bounds.getSouthWest().lng,
+            minlat: bounds.getSouthWest().lat,
+            maxlng: bounds.getNorthEast().lng,
+            maxlat: bounds.getNorthEast().lat,
+            width: size.width,
+            height: size.height,
+            zoom: this.map.getZoom(),
+        };
     }
     public gps2pix(lng: number, lat: number) {
         let bmappoint = new BMap.Point(lng, lat);
