@@ -7,10 +7,13 @@ import zrender from 'zrender';
 export default class AmapCanvas extends MapBase {
     private extra: any;
     private canvas: any;
+    public PointType = 'GCJ';
+
     public init(container: HTMLDivElement) {
         const me = this;
         me.map = new AMap.Map(container, {
-            zoom: 12,
+            zoom: 15,
+            center: new AMap.LngLat(120.236463, 35.958023),
         });
         me.canvas = document.createElement('canvas');
         me.map.on('complete', function() {
@@ -39,16 +42,14 @@ export default class AmapCanvas extends MapBase {
             zoom: this.map.getZoom(),
         };
     }
+
     private update() {
         let that = this.extra ? this.extra : this;
         that.zr.clear();
-        that.draw();
     }
 
     public gps2pix(lng: number, lat: number) {
-        return this.map.getBounds().contains([lng, lat])
-            ? this.map.lnglatTocontainer([lng, lat])
-            : null;
+        return this.map.lnglatTocontainer([lng, lat]);
     }
 
     /**

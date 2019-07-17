@@ -6,6 +6,7 @@ import _ from 'lodash';
 export default class BmapCanvas extends MapBase {
     private extra: any;
     private canvas: any;
+    public PointType = 'BD';
 
     public init(container: HTMLElement) {
         this.map = new BMap.Map(container);
@@ -24,6 +25,7 @@ export default class BmapCanvas extends MapBase {
         bmapCanvas.extra = this;
         EE.emit('mapLoaded');
     }
+
     public getBounds() {
         let bounds = this.map.getBounds();
         let size = this.map.getSize();
