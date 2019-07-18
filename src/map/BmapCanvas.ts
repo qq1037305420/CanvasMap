@@ -10,19 +10,19 @@ export default class BmapCanvas extends MapBase {
 
     public init(container: HTMLElement) {
         this.map = new BMap.Map(container);
-        this.map.centerAndZoom(
-            new BMap.Point(120.17047335303083, 35.97316165527997),
-            12
-        );
-        this.map.setCurrentCity('北京');
+        this.map.centerAndZoom(new BMap.Point(120.236463, 35.958023), 12);
         this.map.enableScrollWheelZoom(true);
-        let bmapCanvas = new BMap.CanvasLayer({update: this.update});
-        this.map.addOverlay(bmapCanvas);
-        this.canvas = bmapCanvas.canvas;
-        this.zr = zrender.init(this.canvas);
+        // let bmapCanvas = new BMap.CanvasLayer({update: this.update});
+        // this.map.addOverlay(bmapCanvas);
+        // this.canvas = bmapCanvas.canvas;
+        this.canvas = document.getElementById('mapcanvas');
         this.canvas.height = this.map.getSize().height;
         this.canvas.width = this.map.getSize().width;
-        bmapCanvas.extra = this;
+        document.getElementById('map-container').appendChild(this.canvas);
+
+        this.zr = zrender.init(this.canvas);
+
+        // bmapCanvas.extra = this;
         EE.emit('mapLoaded');
     }
 
@@ -47,9 +47,8 @@ export default class BmapCanvas extends MapBase {
     }
 
     private update() {
-        let that = this.extra ? this.extra : this;
-        that.zr.clear();
-        that.draw();
+        // let that = this.extra ? this.extra : this;
+        // that.zr.clear();
     }
 
     /**

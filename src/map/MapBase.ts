@@ -6,7 +6,7 @@ import {GEOSTORE} from '@/map/utils/Store';
 import Supercluster from 'supercluster';
 var geojsonCoords = require('@mapbox/geojson-coords');
 import {GeoTypes} from '@/map/utils/GeoTypes';
-import {BD2GCJ, GCJ2GPS, GPS2GCJ} from './coordinate';
+import {BD2GCJ, GCJ2GPS, GPS2GCJ, GCJ2BD} from './coordinate';
 
 export abstract class MapBase {
     public map: any;
@@ -33,13 +33,18 @@ export abstract class MapBase {
     public gps2gcj(val: any[]) {
         return GPS2GCJ({lng: val[0], lat: val[1]});
     }
+
+    public gcj2bd(lng, lat) {
+        return GCJ2BD({lng, lat});
+    }
+
     public getGpsBounds() {
         let b = this.getBounds();
         let points: any[] = [
             {lng: b.minlng, lat: b.minlat},
-            {lng: b.minlng, lat: b.maxlat},
             {lng: b.maxlng, lat: b.minlat},
             {lng: b.maxlng, lat: b.maxlat},
+            {lng: b.minlng, lat: b.maxlat},
         ];
         if (this.PointType == 'GCJ') {
             points = points.map(e => {
