@@ -1,5 +1,5 @@
 <template>
-    <div ref="mapcontainer" style="height: 50%; width: 100%;"></div>
+    <div ref="mapcontainer" style="height: 100%; width: 50%;"></div>
 </template>
 
 <script lang="ts">
@@ -32,7 +32,7 @@ export default class HelloWorld extends Vue {
         this.map.init(this.$refs.mapcontainer);
         setInterval(() => {
             me.getPoints();
-        }, 33);
+        }, 16);
     }
 
     public initStore() {

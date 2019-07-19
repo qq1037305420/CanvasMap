@@ -19,6 +19,7 @@ export default class BmapCanvas extends MapBase {
         this.zr = zrender.init(this.canvas);
         this.EventBus.emit('mapLoaded');
         this.maploaded();
+        this.addToolBar();
     }
 
     public panTo(lng: number, lat: number) {

@@ -26,6 +26,7 @@ export default class AmapCanvas extends MapBase {
             me.zr = zrender.init(me.canvas);
             me.EventBus.emit('mapLoaded');
             me.maploaded();
+            me.addToolBar();
         });
     }
 
