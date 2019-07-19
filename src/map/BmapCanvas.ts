@@ -7,7 +7,7 @@ export default class BmapCanvas extends MapBase {
 
     public init(container: HTMLElement) {
         this.map = new BMap.Map(container, {enableHighResolution: false});
-        this.map.centerAndZoom(new BMap.Point(120.236463, 35.958023), 12);
+        this.map.centerAndZoom(new BMap.Point(120.236463, 35.958023), 15);
         this.canvas = document.createElement('canvas') as Element;
         this.canvas.style.position = 'absolute';
         this.canvas.style.top = '0';

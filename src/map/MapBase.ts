@@ -17,7 +17,7 @@ export abstract class MapBase {
 
     public maploaded() {
         let me = this;
-        me.canvas.addEventListener('mousedown', function(e) {
+        me.canvas.addEventListener('mousedown', function() {
             function onMouseMove(event) {
                 me.panBy(event.movementX, event.movementY);
             }
@@ -34,9 +34,9 @@ export abstract class MapBase {
 
         me.canvas.addEventListener('mousewheel', function(e) {
             if (e.deltaY < 0) {
-                me.zoomIn(e.pageX, e.pageY);
+                me.zoomIn(e.layerX, e.layerY);
             } else {
-                me.zoomOut(e.pageX, e.pageY);
+                me.zoomOut(e.layerX, e.layerY);
             }
         });
     }

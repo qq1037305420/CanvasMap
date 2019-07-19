@@ -1,20 +1,23 @@
 <template>
     <div id="app">
         <!-- <HelloWorld ref="helloWorld" scale toolbar overview /> -->
-        <geostore />
+        <bmap />
+        <amap />
     </div>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 import HelloWorld from './components/HelloWorld.vue';
-import geostore from './components/geostore.vue';
+import bmap from './components/bmap.vue';
+import amap from './components/amap.vue';
 // import _ from 'lodash';
 // import empData from '@/empData.json';
 @Component({
     components: {
         HelloWorld,
-        geostore,
+        bmap,
+        amap,
     },
 })
 export default class App extends Vue {}

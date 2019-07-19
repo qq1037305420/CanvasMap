@@ -1,5 +1,5 @@
 <template>
-    <div id="hello" style="height: 100%; width: 100%;"></div>
+    <div ref="mapcontainer" style="height: 50%; width: 100%;"></div>
 </template>
 
 <script lang="ts">
@@ -29,7 +29,7 @@ export default class HelloWorld extends Vue {
         let me = this;
         let fac = new MapFactory();
         this.map = fac.createMapObj('amap');
-        this.map.init(document.getElementById('hello'));
+        this.map.init(this.$refs.mapcontainer);
         setInterval(() => {
             me.getPoints();
         }, 33);
