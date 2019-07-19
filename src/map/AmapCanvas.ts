@@ -1,13 +1,9 @@
 /* global AMap */
 import {MapBase} from './MapBase';
 import _ from 'lodash';
-import EE from './EventBus';
 import zrender from 'zrender';
-const DndSimulator = require('./dndsim.js');
 
 export default class AmapCanvas extends MapBase {
-    private extra: any;
-    private canvas: any;
     public PointType = 'GCJ';
 
     public init(container: HTMLDivElement) {
@@ -17,52 +13,19 @@ export default class AmapCanvas extends MapBase {
             center: new AMap.LngLat(120.236463, 35.958023),
             animateEnable: false,
         });
-        me.canvas = document.getElementById('mapcanvas') as Element;
-        let mapContainer = document.getElementById('map-container');
+
+        me.canvas = document.createElement('canvas') as Element;
+        me.canvas.style.position = 'absolute';
+        me.canvas.style.top = '0';
+        me.canvas.style.left = '0';
+
         me.map.on('complete', function() {
             me.canvas.width = me.map.getSize().width;
             me.canvas.height = me.map.getSize().height;
-            mapContainer.appendChild(me.canvas);
-            // 将 canvas 宽高设置为地图实例的宽高
-            // var canvasLayer = new AMap.CustomLayer(me.canvas, {zIndex: 200});
-            // canvasLayer.extra = me;
-            // canvasLayer.setMap(me.map);
-            // canvasLayer.render = me.update;
+            container.appendChild(me.canvas);
             me.zr = zrender.init(me.canvas);
-            EE.emit('mapLoaded');
-        });
-        // me.map.on('click', function(e) {
-        //     var ev = new MouseEvent('click', {
-        //         view: window,
-        //         bubbles: true,
-        //         cancelable: true,
-        //         screenX: e.pixel.x,
-        //         screenY: e.pixel.y,
-        //     });
-        //     me.canvas.dispatchEvent(ev);
-        // });
-
-        me.canvas.addEventListener('mousedown', function(e) {
-            function moveAt(pageX, pageY) {
-                me.map.panBy(pageX, pageY);
-            }
-            function onMouseMove(event) {
-                moveAt(event.movementX, event.movementY);
-            }
-            document.addEventListener('mousemove', onMouseMove);
-            me.canvas.onmouseup = () => {
-                document.removeEventListener('mousemove', onMouseMove);
-                me.canvas.onmouseup = null;
-            };
-        });
-        me.canvas.addEventListener('mousewheel', function(e) {
-            let center = me.pix2gps(e.pageX, e.pageY);
-            me.map.panTo(new AMap.LngLat(center.lng, center.lat));
-            if (e.deltaY < 0) {
-                me.map.zoomIn();
-            } else {
-                me.map.zoomOut();
-            }
+            me.EventBus.emit('mapLoaded');
+            me.maploaded();
         });
     }
 
@@ -80,20 +43,36 @@ export default class AmapCanvas extends MapBase {
         };
     }
 
-    // private update() {
-    //     let that = this.extra ? this.extra : this;
-    //     that.zr.clear();
-    // }
+    public panTo(lng: number, lat: number) {
+        this.map.panTo(new AMap.LngLat(lng, lat));
+    }
+
+    public panBy(x: number, y: number) {
+        this.map.panBy(x, y);
+    }
+
+    public zoomIn(x: number, y: number) {
+        if (this.map.getZoom() < 18) {
+            let center = this.pix2gps(x, y);
+            this.panTo(center.lng, center.lat);
+            this.map.zoomIn();
+        }
+    }
+
+    public zoomOut(x: number, y: number) {
+        if (this.map.getZoom() > 6) {
+            let center = this.pix2gps(x, y);
+            this.panTo(center.lng, center.lat);
+            this.map.zoomOut();
+        }
+    }
 
     public gps2pix(lng: number, lat: number) {
         return this.map.lnglatTocontainer([lng, lat]);
     }
 
     public pix2gps(x: number, y: number) {
-        return this.map.containerToLngLat(
-            new AMap.Pixel(x, y),
-            this.map.getZoom()
-        );
+        return this.map.containerToLngLat(new AMap.Pixel(x, y));
     }
 
     /**

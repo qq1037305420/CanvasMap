@@ -1,29 +1,49 @@
 /* global BMap */
 import {MapBase} from './MapBase';
-import EE from './EventBus';
 import zrender from 'zrender';
 import _ from 'lodash';
 export default class BmapCanvas extends MapBase {
-    private extra: any;
-    private canvas: any;
     public PointType = 'BD';
 
     public init(container: HTMLElement) {
-        this.map = new BMap.Map(container);
+        this.map = new BMap.Map(container, {enableHighResolution: false});
         this.map.centerAndZoom(new BMap.Point(120.236463, 35.958023), 12);
-        this.map.enableScrollWheelZoom(true);
-        // let bmapCanvas = new BMap.CanvasLayer({update: this.update});
-        // this.map.addOverlay(bmapCanvas);
-        // this.canvas = bmapCanvas.canvas;
-        this.canvas = document.getElementById('mapcanvas');
+        this.canvas = document.createElement('canvas') as Element;
+        this.canvas.style.position = 'absolute';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
         this.canvas.height = this.map.getSize().height;
         this.canvas.width = this.map.getSize().width;
-        document.getElementById('map-container').appendChild(this.canvas);
+        container.appendChild(this.canvas);
 
         this.zr = zrender.init(this.canvas);
-
         // bmapCanvas.extra = this;
-        EE.emit('mapLoaded');
+        this.EventBus.emit('mapLoaded');
+        this.maploaded();
+    }
+
+    public panTo(lng: number, lat: number) {
+        this.map.panTo(new BMap.Point(lng, lat), {noAnimation: true});
+    }
+
+    public panBy(x: number, y: number) {
+        this.map.panBy(x, y, {noAnimation: true});
+    }
+
+    public zoomIn(x: number, y: number) {
+        if (this.map.getZoom() < 18) {
+            let center = this.pix2gps(x, y);
+            this.panTo(center.lng, center.lat);
+            this.map.zoomIn();
+        }
+    }
+
+    public zoomOut(x: number, y: number) {
+        if (this.map.getZoom() > 6) {
+            let center = this.pix2gps(x, y);
+            this.panTo(center.lng, center.lat);
+            this.map.zoomOut();
+        }
     }
 
     public getBounds() {
@@ -40,15 +60,11 @@ export default class BmapCanvas extends MapBase {
         };
     }
     public gps2pix(lng: number, lat: number) {
-        let bmappoint = new BMap.Point(lng, lat);
-        return this.map.getBounds().containsPoint(bmappoint)
-            ? this.map.pointToPixel(bmappoint)
-            : null;
+        return this.map.pointToPixel(new BMap.Point(lng, lat));
     }
 
-    private update() {
-        // let that = this.extra ? this.extra : this;
-        // that.zr.clear();
+    public pix2gps(x: number, y: number) {
+        return this.map.pixelToPoint(new BMap.Pixel(x, y));
     }
 
     /**

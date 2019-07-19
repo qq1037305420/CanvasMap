@@ -4,22 +4,50 @@ import zrender from 'zrender';
 import * as Terraformer from 'terraformer';
 import {GEOSTORE} from '@/map/utils/Store';
 import Supercluster from 'supercluster';
+import EventEmitter from 'eventemitter3';
 var geojsonCoords = require('@mapbox/geojson-coords');
-import {GeoTypes} from '@/map/utils/GeoTypes';
 import {BD2GCJ, GCJ2GPS, GPS2GCJ, GCJ2BD} from './coordinate';
 
 export abstract class MapBase {
     public map: any;
     public zr: any;
+    public canvas: any;
     public PointType: string = '';
+    public EventBus = new EventEmitter();
 
-    // public totalPoints: any[] = [];
-    public SuperCluster = new Supercluster({
-        radius: 400,
-        maxZoom: 16,
-    });
+    public maploaded() {
+        let me = this;
+        me.canvas.addEventListener('mousedown', function(e) {
+            function onMouseMove(event) {
+                me.panBy(event.movementX, event.movementY);
+            }
+            me.canvas.addEventListener('mousemove', onMouseMove);
+            me.canvas.onmouseup = () => {
+                me.canvas.removeEventListener('mousemove', onMouseMove);
+                me.canvas.onmouseup = null;
+            };
+            me.canvas.onmouseout = () => {
+                me.canvas.removeEventListener('mousemove', onMouseMove);
+                me.canvas.onmouseup = null;
+            };
+        });
+
+        me.canvas.addEventListener('mousewheel', function(e) {
+            if (e.deltaY < 0) {
+                me.zoomIn(e.pageX, e.pageY);
+            } else {
+                me.zoomOut(e.pageX, e.pageY);
+            }
+        });
+    }
+
     public abstract init(container: HTMLElement | null): void;
     public abstract gps2pix(lng: number, lat: number): any;
+    public abstract pix2gps(x: number, y: number): any;
+    public abstract panBy(x: number, y: number): any;
+    public abstract panTo(lng: number, lat: number): any;
+    public abstract zoomIn(lng: number, lat: number): any;
+    public abstract zoomOut(lng: number, lat: number): any;
     public abstract getBounds(): any;
     /**
      * Map Control Group
@@ -38,7 +66,12 @@ export abstract class MapBase {
         return GCJ2BD({lng, lat});
     }
 
-    public getGpsBounds() {
+    // public SuperCluster = new Supercluster({
+    //     radius: 400,
+    //     maxZoom: 18,
+    // });
+
+    public getGpsRange() {
         let b = this.getBounds();
         let points: any[] = [
             {lng: b.minlng, lat: b.minlat},
@@ -60,58 +93,30 @@ export abstract class MapBase {
         return points;
     }
 
-    // public draw() {
-    //     this.drawMarker();
-    //     this.zr.flush();
-    // }
-
-    // private drawMarker() {
-    //     this.SuperCluster.load(Object.values(GEOSTORE.store.data));
-    //     let bounds = this.getBounds();
-    //     let clusterData = this.SuperCluster.getClusters(
-    //         [bounds.minlng, bounds.minlat, bounds.maxlng, bounds.maxlat],
-    //         bounds.zoom
-    //     );
-    //     clusterData.forEach(element => {
-    //         let elementPoints = geojsonCoords(element);
-    //         if (
-    //             element.type === GeoTypes.Feature &&
-    //             element.geometry.type === GeoTypes.Point
-    //         ) {
-    //             let pix = this.gps2pix(
-    //                 elementPoints[0][0],
-    //                 elementPoints[0][1]
-    //             );
-    //             if (_.isEmpty(pix)) return;
-    //             if (element.properties.cluster === true) {
-    //                 let clusterCount = element.properties.point_count;
-    //                 this.zr.add(
-    //                     new zrender.Heart({
-    //                         shape: {
-    //                             cx: pix.x,
-    //                             cy: pix.y,
-    //                             width: 50,
-    //                             height: 50,
-    //                         },
-    //                         style: {
-    //                             fill: 'rgba(255,0,0,0.5)',
-    //                             stroke: 'none',
-    //                             text: clusterCount,
-    //                         },
-    //                     })
-    //                 );
-    //             } else {
-    //                 this.zr.add(
-    //                     new zrender.Image({
-    //                         style: {
-    //                             image: Env.IMG_URL + element.properties.icon,
-    //                             x: pix.x,
-    //                             y: pix.y,
-    //                         },
-    //                     })
-    //                 );
-    //             }
-    //         }
-    //     });
-    // }
+    public getGpsBounds() {
+        let b = this.getBounds();
+        let points: any[] = [
+            {lng: b.minlng, lat: b.minlat},
+            {lng: b.maxlng, lat: b.maxlat},
+        ];
+        if (this.PointType == 'GCJ') {
+            points = points.map(e => {
+                e = GCJ2GPS(e);
+                return [e.lng, e.lat];
+            });
+        } else if (this.PointType == 'BD') {
+            points = points.map(e => {
+                e = GCJ2GPS(BD2GCJ(e));
+                return [e.lng, e.lat];
+            });
+        }
+        return {
+            maxlng: points[1][0],
+            minlng: points[0][0],
+            maxlat: points[1][1],
+            minlat: points[0][1],
+            height: b.height,
+            width: b.width,
+        };
+    }
 }

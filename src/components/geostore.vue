@@ -1,16 +1,5 @@
 <template>
-    <div
-        id="map-container"
-        style="height: 100%; width: 100%; position:relative;"
-    >
-        <div id="hello" style="height: 100%; width: 100%;"></div>
-        <!-- pointer-events: none; -->
-
-        <canvas
-            id="mapcanvas"
-            style="  position: absolute; top: 0; left: 0px;"
-        />
-    </div>
+    <div id="hello" style="height: 100%; width: 100%;"></div>
 </template>
 
 <script lang="ts">
@@ -39,7 +28,7 @@ export default class HelloWorld extends Vue {
     public initMap() {
         let me = this;
         let fac = new MapFactory();
-        this.map = fac.createMapObj('amap');
+        this.map = fac.createMapObj('bmap');
         this.map.init(document.getElementById('hello'));
         // let getData = _.debounce(me.getPoints, 33);
         // this.map.map.on('mapmove', function(e) {
@@ -68,18 +57,17 @@ export default class HelloWorld extends Vue {
 
     public getPoints() {
         let me = this;
-        let bounds = me.map.getGpsBounds();
-        let bound = me.map.getBounds();
-        // let C2P = new Coord2Pix(
-        //     bound.maxlng,
-        //     bound.minlng,
-        //     bound.maxlat,
-        //     bound.minlat,
-        //     bound.height,
-        //     bound.width
-        // );
+        let bound = me.map.getGpsBounds();
+        let C2P = new Coord2Pix(
+            bound.maxlng,
+            bound.minlng,
+            bound.maxlat,
+            bound.minlat,
+            bound.height,
+            bound.width
+        );
         let polygon = new Terraformer.Primitive(
-            rewind(new Terraformer.Polygon([bounds]), true)
+            new Terraformer.Polygon([me.map.getGpsRange()])
         );
         me.map.zr.clear();
         me.store
@@ -87,22 +75,24 @@ export default class HelloWorld extends Vue {
             .then(res => {
                 res.forEach(function(e: any) {
                     let point = e.geometry.coordinates;
-                    point = me.map.gps2gcj(point);
-                    // let pix = C2P.corrd2pix(point['lng'], point['lat']);
-                    let pix = me.map.gps2pix(point['lng'], point['lat']);
-                    me.map.zr.add(
-                        new zrender.Circle({
-                            shape: {
-                                cx: pix.x,
-                                cy: pix.y,
-                                r: 5,
-                            },
-                            style: {
-                                fill: 'rgba(255,0,0,0.5)',
-                                stroke: 'none',
-                            },
-                        })
-                    );
+                    let pix = C2P.corrd2pix(point[0], point[1]);
+                    if (!pix || !pix.x || !pix.y) return;
+                    let circle = new zrender.Circle({
+                        shape: {
+                            cx: pix.x,
+                            cy: pix.y,
+                            r: 5,
+                        },
+                        style: {
+                            fill: 'rgba(255,0,0,0.5)',
+                            stroke: 'none',
+                        },
+                    });
+                    circle.extra = e;
+                    circle.on('click', x => {
+                        console.log('circle on click', x.target.extra.id);
+                    });
+                    me.map.zr.add(circle);
                 });
             })
             .catch(err => {
@@ -114,10 +104,3 @@ export default class HelloWorld extends Vue {
     }
 }
 </script>
-<style>
-.amap-e {
-    position: fixed;
-    top: 0 !important;
-    left: 0 !important;
-}
-</style>
