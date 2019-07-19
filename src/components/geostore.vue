@@ -28,12 +28,8 @@ export default class HelloWorld extends Vue {
     public initMap() {
         let me = this;
         let fac = new MapFactory();
-        this.map = fac.createMapObj('bmap');
+        this.map = fac.createMapObj('amap');
         this.map.init(document.getElementById('hello'));
-        // let getData = _.debounce(me.getPoints, 33);
-        // this.map.map.on('mapmove', function(e) {
-        //     getData();
-        // });
         setInterval(() => {
             me.getPoints();
         }, 33);

@@ -6,9 +6,7 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import MapFactory from '@/map/MapFactory';
 import _ from 'lodash';
-import EE from '@/map/EventBus';
 import {MapBase} from '@/map/MapBase';
-import * as Builders from '@/map/utils/BuilderOptions';
 import facilityData from './facility.json';
 // import Worker from 'worker-loader!@/map/Worker.js';
 
@@ -28,12 +26,6 @@ export default class HelloWorld extends Vue {
     @Prop({type: String, default: 'amap'})
     public mapType!: string;
     // public worker = new Worker();
-    created() {
-        EE.once('mapLoaded', () => {
-            this.loadControls();
-            // this.addEmpMarker(facilityData.data);
-        });
-    }
     mounted() {
         let fac = new MapFactory();
         this.map = fac.createMapObj(this.mapType);
@@ -58,23 +50,6 @@ export default class HelloWorld extends Vue {
             this.map.addGeolocation();
         }
     }
-
-    // public addEmpMarker(empOptions: Builders.EmpOptions[]) {
-    //     let me = this;
-    //     this.worker.postMessage({
-    //         data: empOptions,
-    //         type: 'GCJ',
-    //     });
-
-    //     this.worker.onmessage = e => {
-    //         e.data.map(empOption => {
-    //             return this.map.addMarker(
-    //                 _.merge({}, Builders.DEFAULT_EMP_OPTIONS, empOption)
-    //             );
-    //         });
-    //         this.map.draw();
-    //     };
-    // }
 }
 </script>
 <style>

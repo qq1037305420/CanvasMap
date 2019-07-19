@@ -17,7 +17,6 @@ export default class BmapCanvas extends MapBase {
         container.appendChild(this.canvas);
 
         this.zr = zrender.init(this.canvas);
-        // bmapCanvas.extra = this;
         this.EventBus.emit('mapLoaded');
         this.maploaded();
     }

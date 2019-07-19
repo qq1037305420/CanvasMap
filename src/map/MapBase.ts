@@ -42,6 +42,7 @@ export abstract class MapBase {
     }
 
     public abstract init(container: HTMLElement | null): void;
+    /* Native Map implementation */
     public abstract gps2pix(lng: number, lat: number): any;
     public abstract pix2gps(x: number, y: number): any;
     public abstract panBy(x: number, y: number): any;
