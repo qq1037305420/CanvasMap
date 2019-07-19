@@ -20,8 +20,8 @@ export default class AmapCanvas extends MapBase {
         me.canvas.style.left = '0';
 
         me.map.on('complete', function() {
-            me.canvas.width = me.map.getSize().width;
-            me.canvas.height = me.map.getSize().height;
+            me.canvas.width = me.map.getSize().width + 1000;
+            me.canvas.height = me.map.getSize().height + 1000;
             container.appendChild(me.canvas);
             me.zr = zrender.init(me.canvas);
             me.EventBus.emit('mapLoaded');

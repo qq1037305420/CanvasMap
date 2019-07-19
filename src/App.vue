@@ -2,7 +2,7 @@
     <div id="app">
         <!-- <HelloWorld ref="helloWorld" scale toolbar overview /> -->
         <bmap />
-        <amap />
+        <!-- <amap /> -->
     </div>
 </template>
 

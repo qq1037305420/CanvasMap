@@ -12,8 +12,8 @@ export default class BmapCanvas extends MapBase {
         this.canvas.style.position = 'absolute';
         this.canvas.style.top = '0';
         this.canvas.style.left = '0';
-        this.canvas.height = this.map.getSize().height;
-        this.canvas.width = this.map.getSize().width;
+        this.canvas.height = this.map.getSize().height + 1000;
+        this.canvas.width = this.map.getSize().width + 1000;
         container.appendChild(this.canvas);
 
         this.zr = zrender.init(this.canvas);

@@ -1,5 +1,5 @@
 <template>
-    <div ref="mapcontainer" style="height: 100%; width: 50%;"></div>
+    <div ref="mapcontainer" style="height: 100%; width: 100%;"></div>
 </template>
 
 <script lang="ts">
@@ -32,7 +32,7 @@ export default class HelloWorld extends Vue {
         this.map.init(this.$refs.mapcontainer);
         setInterval(() => {
             me.getPoints();
-        }, 16);
+        }, 3333);
     }
 
     public initStore() {
@@ -69,7 +69,9 @@ export default class HelloWorld extends Vue {
         me.store
             .within(polygon)
             .then(res => {
-                res.forEach(function(e: any) {
+                console.log(res);
+                res.on('data', e => {
+                    console.log(e);
                     let point = e.geometry.coordinates;
                     let pix = C2P.corrd2pix(point[0], point[1]);
                     if (!pix || !pix.x || !pix.y) return;

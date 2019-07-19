@@ -1,5 +1,5 @@
 <template>
-    <div ref="mapcontainer" style="height: 100%; width: 50%;"></div>
+    <div ref="mapcontainer" style="height: 100%; width: 100%;"></div>
 </template>
 
 <script lang="ts">
@@ -31,8 +31,8 @@ export default class HelloWorld extends Vue {
         this.map = fac.createMapObj('bmap');
         this.map.init(this.$refs.mapcontainer);
         setInterval(() => {
-            me.getPoints();
-        }, 16);
+            this.getPoints();
+        }, 33);
     }
 
     public initStore() {
@@ -66,37 +66,41 @@ export default class HelloWorld extends Vue {
             new Terraformer.Polygon([me.map.getGpsRange()])
         );
         me.map.zr.clear();
-        me.store
-            .within(polygon)
-            .then(res => {
-                res.forEach(function(e: any) {
-                    let point = e.geometry.coordinates;
-                    let pix = C2P.corrd2pix(point[0], point[1]);
-                    if (!pix || !pix.x || !pix.y) return;
-                    let circle = new zrender.Circle({
-                        shape: {
-                            cx: pix.x,
-                            cy: pix.y,
-                            r: 5,
-                        },
-                        style: {
-                            fill: 'rgba(255,0,0,0.5)',
-                            stroke: 'none',
-                        },
-                    });
-                    circle.extra = e;
-                    circle.on('click', x => {
-                        console.log('circle on click', x.target.extra.id);
-                    });
-                    me.map.zr.add(circle);
-                });
-            })
-            .catch(err => {
-                console.warn(err);
-            })
-            .finally(() => {
-                me.map.zr.flush();
+        me.store.within(polygon, null, e => {
+            let point = e.geometry.coordinates;
+            let pix = C2P.corrd2pix(point[0], point[1]);
+            if (!pix || !pix.x || !pix.y) return;
+            let circle = new zrender.Circle({
+                shape: {
+                    cx: pix.x,
+                    cy: pix.y,
+                    r: 5,
+                },
+                style: {
+                    fill: 'rgba(255,0,0,0.5)',
+                    stroke: 'none',
+                },
             });
+            circle.extra = e;
+            circle.on('click', x => {
+                console.log('circle on click', x.target.extra.id);
+            });
+            me.map.zr.add(circle);
+        });
+        // me.map.zr.flush();
+        // .then(res => {
+        //     res.on('data', function(geojson) {
+        //         // found geojson
+        //         console.log(geojson);
+        //     });
+        //     res.on('data');
+        //     // res.forEach(function(e: any) {});
+        // })
+        // .catch(err => {
+        //     console.warn(err);
+        // })
+        // .finally(() => {
+        // });
     }
 }
 </script>

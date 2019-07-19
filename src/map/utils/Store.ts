@@ -54,7 +54,7 @@ export class GEOSTORE {
     }
 
     public contains(json: any, search: any = {}): Promise<any> {
-        // const stream = store.createReadStream();
+        const stream = this.store.createReadStream();
         return new Promise((resolve, reject) => {
             this.store.contains(json, search, function(err: any, res: any[]) {
                 if (err || !_.isEmpty(err)) {
@@ -62,12 +62,16 @@ export class GEOSTORE {
                 }
                 resolve(res);
             });
+            resolve(stream);
         });
     }
 
-    public within(json: any, search: any = {}): Promise<any> {
+    public within(json: any, search: any = {}, func: Function): Promise<any> {
         return new Promise((resolve, reject) => {
-            // const stream = store.createReadStream();
+            let stream = this.store.createReadStream();
+            stream.on('data', e => {
+                func(e);
+            });
             this.store.within(json, search, function(err: any, res: any[]) {
                 if (err || !_.isEmpty(err)) {
                     reject(err);
