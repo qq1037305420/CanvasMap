@@ -22,12 +22,6 @@ export default class AmapCanvas extends MapBase {
         me.canvas.style.top = '0';
         me.canvas.style.left = '0';
 
-        // addListener(container, e => {
-        //     console.log('resize');
-        //     me.canvas.width = me.map.getSize().width;
-        //     me.canvas.height = me.map.getSize().height;
-        // });
-
         me.map.on('complete', function() {
             me.canvas.width = me.map.getSize().width;
             me.canvas.height = me.map.getSize().height;

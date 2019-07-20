@@ -7,8 +7,6 @@ import {Component, Prop, Vue} from 'vue-property-decorator';
 import * as GeoStore from '@/map/utils/Store';
 import Terraformer from 'terraformer';
 import Data from './facility.json';
-import _ from 'lodash';
-import rewind from 'geojson-rewind';
 
 //Map
 import MapFactory from '@/map/MapFactory';
