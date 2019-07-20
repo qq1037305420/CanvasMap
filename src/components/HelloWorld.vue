@@ -30,7 +30,6 @@ export default class HelloWorld extends Vue {
         let fac = new MapFactory();
         this.map = fac.createMapObj(this.mapType);
         this.map.init(document.getElementById('hello'));
-        console.log(JSON.stringify(this.map.getGpsBounds()));
     }
 
     public loadControls() {

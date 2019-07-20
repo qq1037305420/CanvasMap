@@ -1,7 +1,7 @@
 /* global AMap */
 import {MapBase} from './MapBase';
 import _ from 'lodash';
-import zrender from 'zrender';
+import * as PIXI from 'pixi.js';
 
 export default class AmapCanvas extends MapBase {
     public PointType = 'GCJ';
@@ -9,27 +9,43 @@ export default class AmapCanvas extends MapBase {
     public init(container: HTMLDivElement) {
         const me = this;
         me.map = new AMap.Map(container, {
+            resizeEnable: true,
             zoom: 15,
             center: new AMap.LngLat(120.236463, 35.958023),
             animateEnable: false,
         });
-
-        me.canvas = document.createElement('canvas') as Element;
+        this.PIXI = new PIXI.Application({
+            transparent: true,
+        });
+        me.canvas = this.PIXI.view;
         me.canvas.style.position = 'absolute';
         me.canvas.style.top = '0';
         me.canvas.style.left = '0';
 
+        // addListener(container, e => {
+        //     console.log('resize');
+        //     me.canvas.width = me.map.getSize().width;
+        //     me.canvas.height = me.map.getSize().height;
+        // });
+
         me.map.on('complete', function() {
-            me.canvas.width = me.map.getSize().width + 1000;
-            me.canvas.height = me.map.getSize().height + 1000;
+            me.canvas.width = me.map.getSize().width;
+            me.canvas.height = me.map.getSize().height;
             container.appendChild(me.canvas);
-            me.zr = zrender.init(me.canvas);
             me.EventBus.emit('mapLoaded');
             me.maploaded();
             me.addToolBar();
+            me.map.on('resize', e => {
+                me.canvas.width = me.map.getSize().width;
+                me.canvas.height = me.map.getSize().height;
+                me.zoomRender();
+            });
+            me.map.on('zoomend', () => {
+                me.zoomRender();
+            });
         });
     }
-
+    public destory(): void {}
     public getBounds() {
         let bounds = this.map.getBounds();
         let size = this.map.getSize();

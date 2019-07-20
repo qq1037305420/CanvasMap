@@ -4,7 +4,7 @@ const Store = require('terraformer-geostore-memory');
 import _ from 'lodash';
 
 export class GEOSTORE {
-    private store = new GeoStore({
+    public store = new GeoStore({
         store: new Store.Memory(),
         index: new RTree(),
     });
@@ -54,7 +54,6 @@ export class GEOSTORE {
     }
 
     public contains(json: any, search: any = {}): Promise<any> {
-        const stream = this.store.createReadStream();
         return new Promise((resolve, reject) => {
             this.store.contains(json, search, function(err: any, res: any[]) {
                 if (err || !_.isEmpty(err)) {
@@ -62,16 +61,11 @@ export class GEOSTORE {
                 }
                 resolve(res);
             });
-            resolve(stream);
         });
     }
 
-    public within(json: any, search: any = {}, func: Function): Promise<any> {
+    public within(json: any, search: any = {}): Promise<any> {
         return new Promise((resolve, reject) => {
-            let stream = this.store.createReadStream();
-            stream.on('data', e => {
-                func(e);
-            });
             this.store.within(json, search, function(err: any, res: any[]) {
                 if (err || !_.isEmpty(err)) {
                     reject(err);
@@ -79,6 +73,14 @@ export class GEOSTORE {
                 resolve(res);
             });
         });
+    }
+
+    public withinstream(json, func: Function): void {
+        var stream = this.store.createReadStream();
+        stream.on('data', e => {
+            func(e);
+        });
+        this.store.within(json, {}, function(err: any, res: any[]) {});
     }
 }
 
