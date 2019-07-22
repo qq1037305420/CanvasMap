@@ -22,41 +22,41 @@ export abstract class MapBase {
         let me = this;
         const debounceGetPoint = _.debounce(this.moveRender, 33);
         debounceGetPoint.call(me);
-        me.canvas.addEventListener('mousedown', function(e) {
-            let previousEvent: any = null;
-            function onMouseMove(event) {
-                let movementX = event.movementX || 0;
-                let movementY = event.movementY || 0;
-                if (!movementX && previousEvent) {
-                    movementX = event.layerX - previousEvent.layerX;
-                    movementY = event.layerY - previousEvent.layerY;
-                }
-                me.panBy(movementX, movementY);
-                me.PIXI.stage.children.forEach(e => {
-                    e.x += movementX;
-                    e.y += movementY;
-                });
-                debounceGetPoint.call(me);
-                previousEvent = event;
-            }
-            me.canvas.addEventListener('mousemove', onMouseMove);
-            me.canvas.onmouseup = () => {
-                me.canvas.removeEventListener('mousemove', onMouseMove);
-                me.canvas.onmouseup = null;
-            };
-            me.canvas.onmouseout = () => {
-                me.canvas.removeEventListener('mousemove', onMouseMove);
-                me.canvas.onmouseup = null;
-            };
-        });
+        // me.canvas.addEventListener('mousedown', function(e) {
+        //     let previousEvent: any = null;
+        //     function onMouseMove(event) {
+        //         let movementX = event.movementX || 0;
+        //         let movementY = event.movementY || 0;
+        //         if (!movementX && previousEvent) {
+        //             movementX = event.layerX - previousEvent.layerX;
+        //             movementY = event.layerY - previousEvent.layerY;
+        //         }
+        //         me.panBy(movementX, movementY);
+        //         me.PIXI.stage.children.forEach(e => {
+        //             e.x += movementX;
+        //             e.y += movementY;
+        //         });
+        //         debounceGetPoint.call(me);
+        //         previousEvent = event;
+        //     }
+        //     me.canvas.addEventListener('mousemove', onMouseMove);
+        //     me.canvas.onmouseup = () => {
+        //         me.canvas.removeEventListener('mousemove', onMouseMove);
+        //         me.canvas.onmouseup = null;
+        //     };
+        //     me.canvas.onmouseout = () => {
+        //         me.canvas.removeEventListener('mousemove', onMouseMove);
+        //         me.canvas.onmouseup = null;
+        //     };
+        // });
 
-        me.canvas.addEventListener('mousewheel', function(e) {
-            if (e.deltaY < 0) {
-                me.zoomIn(e.layerX, e.layerY);
-            } else {
-                me.zoomOut(e.layerX, e.layerY);
-            }
-        });
+        // me.canvas.addEventListener('mousewheel', function(e) {
+        //     if (e.deltaY < 0) {
+        //         me.zoomIn(e.layerX, e.layerY);
+        //     } else {
+        //         me.zoomOut(e.layerX, e.layerY);
+        //     }
+        // });
     }
 
     public abstract init(container: HTMLElement | null): void;
