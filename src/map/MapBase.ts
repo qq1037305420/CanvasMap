@@ -18,11 +18,51 @@ export abstract class MapBase {
     public DisplayStore = new GeoStore.GEOSTORE();
     public canvas: any;
 
+    public abstract init(container: HTMLElement | null): void;
+    /* Native Map implementation */
+    public abstract gps2pix(lng: number, lat: number): {x: number; y: number};
+    public abstract pix2gps(x: number, y: number): {lng: number; lat: number};
+    public abstract panBy(x: number, y: number): void;
+    public abstract panTo(lng: number, lat: number): void;
+    public abstract zoomIn(lng: number, lat: number): void;
+    public abstract zoomOut(lng: number, lat: number): void;
+    public abstract getBounds(): {
+        minlng: number;
+        minlat: number;
+        maxlng: number;
+        maxlat: number;
+        width: number;
+        height: number;
+        zoom: number;
+    };
+    
+    // Map Control Group
+    public abstract addScale(): void;
+    public abstract addMapType(): void;
+    // NavigationControl ToolBar
+    public abstract addToolBar(): void;
+    // OverView MapControl
+    public abstract addOverView(): void;
+    // geolocation
+    public abstract addGeolocation(): void;
+
     public maploaded() {
         let me = this;
         const debounceGetPoint = _.debounce(this.moveRender, 33);
         debounceGetPoint.call(me);
         me.canvas.addEventListener('mousedown', function(e) {
+            function onMouseUp(event) {
+                me.canvas.removeEventListener('mousemove', onMouseMove);
+                me.canvas.onmouseup = null;
+                me.PIXI.stage.children.forEach(e => {
+                    e.x += me.PIXI.stage.x;
+                    e.y += me.PIXI.stage.y;
+                });
+                me.moveRender();
+                me.PIXI.stage.x = 0;
+                me.PIXI.stage.y = 0;
+            }
+
             let previousEvent: any = null;
             function onMouseMove(event) {
                 let movementX = event.movementX || 0;
@@ -32,22 +72,13 @@ export abstract class MapBase {
                     movementY = event.layerY - previousEvent.layerY;
                 }
                 me.panBy(movementX, movementY);
-                me.PIXI.stage.children.forEach(e => {
-                    e.x += movementX;
-                    e.y += movementY;
-                });
-                debounceGetPoint.call(me);
+                me.PIXI.stage.x += movementX;
+                me.PIXI.stage.y += movementY;
                 previousEvent = event;
             }
             me.canvas.addEventListener('mousemove', onMouseMove);
-            me.canvas.onmouseup = () => {
-                me.canvas.removeEventListener('mousemove', onMouseMove);
-                me.canvas.onmouseup = null;
-            };
-            me.canvas.onmouseout = () => {
-                me.canvas.removeEventListener('mousemove', onMouseMove);
-                me.canvas.onmouseup = null;
-            };
+            me.canvas.onmouseup = onMouseUp;
+            me.canvas.onmouseout = onMouseUp;
         });
 
         me.canvas.addEventListener('mousewheel', function(e) {
@@ -58,24 +89,6 @@ export abstract class MapBase {
             }
         });
     }
-
-    public abstract init(container: HTMLElement | null): void;
-    /* Native Map implementation */
-    public abstract gps2pix(lng: number, lat: number): any;
-    public abstract pix2gps(x: number, y: number): any;
-    public abstract panBy(x: number, y: number): any;
-    public abstract panTo(lng: number, lat: number): any;
-    public abstract zoomIn(lng: number, lat: number): any;
-    public abstract zoomOut(lng: number, lat: number): any;
-    public abstract getBounds(): any;
-    /**
-     * Map Control Group
-     */
-    public abstract addScale(): void;
-    public abstract addMapType(): void;
-    public abstract addToolBar(): void; // NavigationControl ToolBar
-    public abstract addOverView(): void; // OverView MapControl
-    public abstract addGeolocation(): void; // geolocation
 
     private getGpsRange() {
         let b = this.getBounds();
@@ -144,8 +157,9 @@ export abstract class MapBase {
         let polygon = new Terraformer.Primitive(
             new Terraformer.Polygon([me.getGpsRange()])
         );
-        // (me.PIXI.stage as PIXI.Container).removeChildren();
-
+        const trashIcon = PIXI.Texture.from(
+            Env.IMG_URL + '5a597639c1cb61598e2f1bcb'
+        );
         me.store.withinstream(polygon, e => {
             me.DisplayStore.get(e.id)
                 .then(res => {
@@ -156,14 +170,14 @@ export abstract class MapBase {
                         let point = e.geometry.coordinates;
                         let pix = C2P.corrd2pix(point[0], point[1]);
                         if (!pix || !pix.x || !pix.y) return;
-                        const circle = new PIXI.Graphics();
-                        circle.beginFill(0xde3249, 1);
-                        circle.drawCircle(pix.x, pix.y, 5);
-                        circle.endFill();
+                        const circle = new PIXI.Sprite(trashIcon);
+                        circle.anchor.set(0.5);
                         circle.interactive = true;
+                        circle.x = pix.x;
+                        circle.y = pix.y;
                         circle.cursor = 'pointer';
                         circle.addListener('click', () => {
-                            console.log(e.properties.id);
+                            console.log(e.properties);
                         });
                         me.PIXI.stage.addChild(circle);
                     }
