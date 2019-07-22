@@ -3,34 +3,12 @@ import {MapBase} from './MapBase';
 import _ from 'lodash';
 import * as PIXI from 'pixi.js';
 import ZR from 'zrender';
-import {Coord2Pix} from '@/map/coordinate';
+import {Coord2Pix, BD2GCJ, GCJ2GPS} from '@/map/coordinate';
 import * as Terraformer from 'terraformer';
 
 export default class AmapCanvas extends MapBase {
     public PointType = 'GCJ';
 
-    // public project(latLng) {
-    //     var siny = Math.sin((latLng.lat() * Math.PI) / 180);
-
-    //     // Truncating to 0.9999 effectively limits latitude to 89.189. This is
-    //     // about a third of a tile past the edge of the world tile.
-    //     siny = Math.min(Math.max(siny, -0.9999), 0.9999);
-
-    //     return [
-    //         this.TILE_SIZE * (0.5 + latLng.lng() / 360),
-    //         this.TILE_SIZE *
-    //             (0.5 - Math.log((1 + siny) / (1 - siny)) / (4 * Math.PI)),
-    //     ];
-    // }
-    _getLngLat(poi) {
-        var lnglat: any = {};
-        lnglat.lng = (poi.x / 20037508.34) * 180;
-        var mmy = (poi.y / 20037508.34) * 180;
-        lnglat.lat =
-            (180 / Math.PI) *
-            (2 * Math.atan(Math.exp((mmy * Math.PI) / 180)) - Math.PI / 2);
-        return lnglat;
-    }
     public toLnglat(x, y, z) {
         let n = Math.pow(2, z);
         let lng = (x / n) * 360.0 - 180.0;
@@ -49,14 +27,15 @@ export default class AmapCanvas extends MapBase {
         });
 
         const createTile = (x, y, z, success, fail) => {
-            let position = me.toLnglat(x, y, z);
+            let NWPoint: any = me.toLnglat(x, y, z);
+            NWPoint = {lng: NWPoint[0], lat: NWPoint[1]};
             /* 左上角 */
             let NW = me.map.lngLatToContainer(
-                new AMap.LngLat(position[0], position[1])
+                new AMap.LngLat(NWPoint.lng, NWPoint.lat)
             );
             /* 右上 */
             let NE = [NW.x + 256, NW.y];
-            let nePoint = me.map.containerToLngLat(
+            let NEPoint = me.map.containerToLngLat(
                 new AMap.Pixel(NE[0], NE[1])
             );
             /* 右下角 */
@@ -69,12 +48,18 @@ export default class AmapCanvas extends MapBase {
             let SWPoint = me.map.containerToLngLat(
                 new AMap.Pixel(SW[0], SW[1])
             );
+            let points = [NWPoint, NEPoint, SEPoint, SWPoint];
+
+            points = points.map(e => {
+                e = GCJ2GPS(e);
+                return [e.lng, e.lat];
+            });
 
             let bound = {
-                minlng: SWPoint['lng'],
-                minlat: SWPoint['lat'],
-                maxlng: nePoint['lng'],
-                maxlat: nePoint['lat'],
+                minlng: points[3][0],
+                minlat: points[3][1],
+                maxlng: points[1][0],
+                maxlat: points[1][1],
                 width: 256,
                 height: 256,
                 zoom: z,
@@ -90,10 +75,10 @@ export default class AmapCanvas extends MapBase {
             let polygon = new Terraformer.Primitive(
                 new Terraformer.Polygon([
                     [
-                        [bound.minlng, bound.minlat],
-                        [bound.maxlng, bound.minlat],
-                        [bound.maxlng, bound.maxlat],
-                        [bound.minlng, bound.maxlat],
+                        [points[0][0], points[0][1]],
+                        [points[1][0], points[1][1]],
+                        [points[2][0], points[2][1]],
+                        [points[3][0], points[3][1]],
                     ],
                 ])
             );
@@ -115,46 +100,27 @@ export default class AmapCanvas extends MapBase {
                 });
                 circle.on('click', e => {
                     console.log(e);
-                    console.log(11111111111);
                 });
                 zr.add(circle);
             });
             success(canvas);
         };
-        // this.PIXI = new PIXI.Application({
-        //     transparent: true,
-        // });
-        // me.canvas = this.PIXI.view;
-        // me.canvas.style.position = 'absolute';
-        // me.canvas.style.top = '0';
-        // me.canvas.style.left = '0';
 
         me.map.on('complete', function() {
             const alayer = new AMap.TileLayer.Flexible({
                 createTile: createTile,
                 map: me.map,
-                zIndex: 33,
+                zIndex: 100,
                 zooms: [3, 18],
-                cacheSize: 50,
+                cacheSize: 20,
                 visible: true,
             });
-            me.map.setLayers([new AMap.TileLayer({map: me.map}), alayer]);
-            me.canvas.width = me.map.getSize().width;
-            me.canvas.height = me.map.getSize().height;
-            // container.appendChild(me.canvas);
             me.EventBus.emit('mapLoaded');
             me.maploaded();
             me.addToolBar();
-            me.map.on('resize', e => {
-                me.canvas.width = me.map.getSize().width;
-                me.canvas.height = me.map.getSize().height;
-                me.zoomRender();
-            });
-            me.map.on('zoomend', () => {
-                me.zoomRender();
-            });
         });
     }
+
     public getBounds() {
         let bounds = this.map.getBounds();
         let size = this.map.getSize();
