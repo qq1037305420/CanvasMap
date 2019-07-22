@@ -31,7 +31,6 @@ export default class BmapCanvas extends MapBase {
             this.zoomRender();
         });
     }
-    public destory(): void {}
 
     public panTo(lng: number, lat: number) {
         this.map.panTo(new BMap.Point(lng, lat), {noAnimation: true});

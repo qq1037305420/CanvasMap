@@ -11,7 +11,7 @@ import * as PIXI from 'pixi.js';
 
 export abstract class MapBase {
     public map: any;
-    public PIXI: any;
+    public PIXI: PIXI.Application;
     public PointType: string = '';
     public EventBus = new EventEmitter();
     public store = new GeoStore.GEOSTORE();
@@ -60,7 +60,6 @@ export abstract class MapBase {
     }
 
     public abstract init(container: HTMLElement | null): void;
-    public abstract destory(): void;
     /* Native Map implementation */
     public abstract gps2pix(lng: number, lat: number): any;
     public abstract pix2gps(x: number, y: number): any;

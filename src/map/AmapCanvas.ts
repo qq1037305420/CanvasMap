@@ -39,7 +39,6 @@ export default class AmapCanvas extends MapBase {
             });
         });
     }
-    public destory(): void {}
     public getBounds() {
         let bounds = this.map.getBounds();
         let size = this.map.getSize();
