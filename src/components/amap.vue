@@ -6,8 +6,8 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import * as GeoStore from '@/map/utils/Store';
 import Terraformer from 'terraformer';
-import Data from './facility.json';
-
+// import Data from './facility.json';
+import Data from './40k.json';
 //Map
 import MapFactory from '@/map/MapFactory';
 
@@ -28,11 +28,14 @@ export default class HelloWorld extends Vue {
     }
 
     public fetchData() {
-        Data.data.forEach(e => {
+        Data.forEach(e => {
             this.map.store.add(
                 GeoStore.FeatureBuilder(
-                    e.id,
-                    new Terraformer.Point([e.lng / 1000000, e.lat / 1000000]),
+                    e._id,
+                    new Terraformer.Point([
+                        e.local.lng / 1000000,
+                        e.local.lat / 1000000,
+                    ]),
                     e
                 )
             );
