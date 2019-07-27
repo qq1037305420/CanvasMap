@@ -35,7 +35,7 @@ export abstract class MapBase {
         height: number;
         zoom: number;
     };
-    
+
     // Map Control Group
     public abstract addScale(): void;
     public abstract addMapType(): void;
@@ -46,46 +46,7 @@ export abstract class MapBase {
     // geolocation
     public abstract addGeolocation(): void;
 
-    public maploaded() {
-        let me = this;
-        const debounceGetPoint = _.debounce(this.moveRender, 33);
-        debounceGetPoint.call(me);
-        // me.canvas.addEventListener('mousedown', function(e) {
-        //     let previousEvent: any = null;
-        //     function onMouseMove(event) {
-        //         let movementX = event.movementX || 0;
-        //         let movementY = event.movementY || 0;
-        //         if (!movementX && previousEvent) {
-        //             movementX = event.layerX - previousEvent.layerX;
-        //             movementY = event.layerY - previousEvent.layerY;
-        //         }
-        //         me.panBy(movementX, movementY);
-        //         me.PIXI.stage.children.forEach(e => {
-        //             e.x += movementX;
-        //             e.y += movementY;
-        //         });
-        //         debounceGetPoint.call(me);
-        //         previousEvent = event;
-        //     }
-        //     me.canvas.addEventListener('mousemove', onMouseMove);
-        //     me.canvas.onmouseup = () => {
-        //         me.canvas.removeEventListener('mousemove', onMouseMove);
-        //         me.canvas.onmouseup = null;
-        //     };
-        //     me.canvas.onmouseout = () => {
-        //         me.canvas.removeEventListener('mousemove', onMouseMove);
-        //         me.canvas.onmouseup = null;
-        //     };
-        // });
-
-        // me.canvas.addEventListener('mousewheel', function(e) {
-        //     if (e.deltaY < 0) {
-        //         me.zoomIn(e.layerX, e.layerY);
-        //     } else {
-        //         me.zoomOut(e.layerX, e.layerY);
-        //     }
-        // });
-    }
+    public maploaded() {}
 
     private getGpsRange() {
         let b = this.getBounds();
@@ -136,59 +97,11 @@ export abstract class MapBase {
         };
     }
 
-    // public SuperCluster = new Supercluster({
-    //     radius: 400,
-    //     maxZoom: 18,
-    // });
-    public moveRender() {
-        let me = this;
-        let bound = me.getGpsBounds();
-        let C2P = new Coord2Pix(
-            bound.maxlng,
-            bound.minlng,
-            bound.maxlat,
-            bound.minlat,
-            bound.height,
-            bound.width
-        );
-        let polygon = new Terraformer.Primitive(
-            new Terraformer.Polygon([me.getGpsRange()])
-        );
-        const trashIcon = PIXI.Texture.from(
-            Env.IMG_URL + '5a597639c1cb61598e2f1bcb'
-        );
-        me.store.withinstream(polygon, e => {
-            me.DisplayStore.get(e.id)
-                .then(res => {
-                    if (res) {
-                        //TODO
-                    } else {
-                        me.DisplayStore.add(e);
-                        let point = e.geometry.coordinates;
-                        let pix = C2P.corrd2pix(point[0], point[1]);
-                        if (!pix || !pix.x || !pix.y) return;
-                        const circle = new PIXI.Sprite(trashIcon);
-                        circle.anchor.set(0.5);
-                        circle.interactive = true;
-                        circle.x = pix.x;
-                        circle.y = pix.y;
-                        circle.cursor = 'pointer';
-                        circle.addListener('click', () => {
-                            console.log(e.properties);
-                        });
-                        me.PIXI.stage.addChild(circle);
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                });
-        });
-    }
-
-    public zoomRender() {
-        let me = this;
-        (me.PIXI.stage as PIXI.Container).removeChildren();
-        me.DisplayStore = new GeoStore.GEOSTORE();
-        this.moveRender();
+    public toLnglat(x, y, z) {
+        let n = Math.pow(2, z);
+        let lng = (x / n) * 360.0 - 180.0;
+        let lat = Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / n)));
+        lat = (lat * 180.0) / Math.PI;
+        return [lng, lat];
     }
 }

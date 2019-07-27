@@ -9,16 +9,9 @@ import * as Terraformer from 'terraformer';
 export default class AmapCanvas extends MapBase {
     public PointType = 'GCJ';
 
-    public toLnglat(x, y, z) {
-        let n = Math.pow(2, z);
-        let lng = (x / n) * 360.0 - 180.0;
-        let lat = Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / n)));
-        lat = (lat * 180.0) / Math.PI;
-        return [lng, lat];
-    }
-
     public init(container: HTMLDivElement) {
         const me = this;
+
         me.map = new AMap.Map(container, {
             resizeEnable: true,
             zoom: 15,
@@ -27,27 +20,19 @@ export default class AmapCanvas extends MapBase {
         });
 
         const createTile = (x, y, z, success, fail) => {
+            /* 左上角 */
             let NWPoint: any = me.toLnglat(x, y, z);
             NWPoint = {lng: NWPoint[0], lat: NWPoint[1]};
-            /* 左上角 */
-            let NW = me.map.lngLatToContainer(
-                new AMap.LngLat(NWPoint.lng, NWPoint.lat)
-            );
             /* 右上 */
-            let NE = [NW.x + 256, NW.y];
-            let NEPoint = me.map.containerToLngLat(
-                new AMap.Pixel(NE[0], NE[1])
-            );
+            let NE = me.toLnglat(x + 1, y, z);
+            let NEPoint = {lng: NE[0], lat: NE[1]};
             /* 右下角 */
-            let SE = [NW.x + 256, NW.y + 256];
-            let SEPoint = me.map.containerToLngLat(
-                new AMap.Pixel(SE[0], SE[1])
-            );
+            let SE = me.toLnglat(x + 1, y + 1, z);
+            let SEPoint = {lng: SE[0], lat: SE[1]};
             /* 左下 */
-            let SW = [NW.x, NW.y + 256];
-            let SWPoint = me.map.containerToLngLat(
-                new AMap.Pixel(SW[0], SW[1])
-            );
+            let SW = me.toLnglat(x, y + 1, z);
+            let SWPoint = {lng: SW[0], lat: SW[1]};
+
             let points = [NWPoint, NEPoint, SEPoint, SWPoint];
 
             points = points.map(e => {
@@ -64,6 +49,7 @@ export default class AmapCanvas extends MapBase {
                 height: 256,
                 zoom: z,
             };
+
             let C2P = new Coord2Pix(
                 bound.maxlng,
                 bound.minlng,
@@ -75,10 +61,10 @@ export default class AmapCanvas extends MapBase {
             let polygon = new Terraformer.Primitive(
                 new Terraformer.Polygon([
                     [
-                        [points[0][0], points[0][1]],
-                        [points[1][0], points[1][1]],
-                        [points[2][0], points[2][1]],
-                        [points[3][0], points[3][1]],
+                        [points[0][0] - 0.0002, points[0][1] + 0.0002],
+                        [points[1][0] + 0.0002, points[1][1] + 0.0002],
+                        [points[2][0] + 0.0002, points[2][1] - 0.0002],
+                        [points[3][0] - 0.0002, points[3][1] - 0.0002],
                     ],
                 ])
             );
@@ -98,7 +84,7 @@ export default class AmapCanvas extends MapBase {
                         stroke: '#F00',
                     },
                 });
-                circle.on('click', e => {
+                circle.on('click', ex => {
                     console.log(e);
                 });
                 zr.add(circle);
@@ -112,8 +98,7 @@ export default class AmapCanvas extends MapBase {
                 map: me.map,
                 zIndex: 100,
                 zooms: [3, 18],
-                cacheSize: 20,
-                visible: true,
+                cacheSize: 40,
             });
             me.EventBus.emit('mapLoaded');
             me.maploaded();

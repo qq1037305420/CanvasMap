@@ -8,28 +8,16 @@ export default class BmapCanvas extends MapBase {
     public init(container: HTMLElement) {
         this.map = new BMap.Map(container, {enableHighResolution: true});
         this.map.centerAndZoom(new BMap.Point(120.236463, 35.958023), 15);
-        this.PIXI = new PIXI.Application({
-            transparent: true,
-        });
-        this.canvas = this.PIXI.view;
-        this.canvas.style.position = 'absolute';
-        this.canvas.style.top = '0';
-        this.canvas.style.left = '0';
-        this.map.centerAndZoom(new BMap.Point(120.236463, 35.958023), 15);
-        this.canvas.height = this.map.getSize().height;
-        this.canvas.width = this.map.getSize().width;
-        container.appendChild(this.canvas);
-        this.EventBus.emit('mapLoaded');
+        this.map.enableScrollWheelZoom();
+        var tilelayer = new BMap.TileLayer();
+        tilelayer.getTilesUrl = (x, y, z) => {
+            console.log(x, y, z);
+            console.log(this.toLnglat(x.x, x.y, y));
+            return 'logo.png';
+        };
+        this.map.addTileLayer(tilelayer);
         this.maploaded();
         this.addToolBar();
-        this.map.addEventListener('resize', e => {
-            this.canvas.height = this.map.getSize().height;
-            this.canvas.width = this.map.getSize().width;
-            this.zoomRender();
-        });
-        this.map.addEventListener('zoomend', () => {
-            this.zoomRender();
-        });
     }
 
     public panTo(lng: number, lat: number) {
